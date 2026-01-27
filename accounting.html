@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accounting - Surat OTOP Biz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50 font-['Prompt']">
+    <header class="bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center">
+                <a href="dashboard.html" class="mr-4 p-2 hover:bg-white hover:bg-opacity-20 rounded-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                </a>
+                <div>
+                    <h1 class="text-xl font-bold">บันทึกรายรับรายจ่าย</h1>
+                    <p class="text-sm text-blue-100">Accounting</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Quick Add Transaction -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">เพิ่มรายการใหม่</h2>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div>
+                    <select id="type" class="w-full p-3 border rounded-lg">
+                        <option value="income">รายรับ</option>
+                        <option value="expense">รายจ่าย</option>
+                    </select>
+                </div>
+                <div>
+                    <input type="number" id="amount" placeholder="จำนวนเงิน" class="w-full p-3 border rounded-lg">
+                </div>
+                <div>
+                    <select id="category" class="w-full p-3 border rounded-lg">
+                        <option>ขายสินค้า</option>
+                        <option>ค่าวัตถุดิบ</option>
+                        <option>ค่าแรงงาน</option>
+                    </select>
+                </div>
+                <div>
+                    <input type="text" id="description" placeholder="รายละเอียด" class="w-full p-3 border rounded-lg">
+                </div>
+                <div>
+                    <button onclick="addTransaction()" class="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600">
+                        ✓ บันทึก
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transactions List -->
+        <div class="bg-white rounded-2xl shadow-lg p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">รายการทั้งหมด</h2>
+            <div id="transactions-list" class="space-y-2">
+                <p class="text-center text-gray-500 py-8">ยังไม่มีรายการ</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        async function addTransaction() {
+            const user = Auth.getCurrentUser();
+            const data = {
+                userId: user.phone,
+                type: document.getElementById('type').value,
+                amount: parseFloat(document.getElementById('amount').value),
+                category: document.getElementById('category').value,
+                description: document.getElementById('description').value,
+                date: new Date().toISOString()
+            };
+            
+            Utils.showLoading(true);
+            const result = await API.addTransaction(data);
+            Utils.showLoading(false);
+            
+            if (result.success) {
+                Utils.showAlert('บันทึกสำเร็จ!', 'success');
+                document.getElementById('amount').value = '';
+                document.getElementById('description').value = '';
+            } else {
+                Utils.showAlert(result.error, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

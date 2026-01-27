@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Costing - Surat OTOP Biz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50 font-['Prompt']">
+    
+    <header class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <a href="dashboard.html" class="mr-4 p-2 hover:bg-white hover:bg-opacity-20 rounded-lg">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                    </a>
+                    <div>
+                        <h1 class="text-xl font-bold">Smart Costing</h1>
+                        <p class="text-sm text-emerald-100">คำนวณต้นทุนและราคาขาย</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <form id="costing-form" class="space-y-6">
+            
+            <!-- Product Info -->
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">ข้อมูลสินค้า</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อสินค้า</label>
+                        <input type="text" id="product-name" class="w-full p-3 border rounded-lg" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">ประเภทสินค้า</label>
+                        <select id="category" class="w-full p-3 border rounded-lg">
+                            <option value="food">อาหารและเครื่องดื่ม</option>
+                            <option value="goods">ของใช้และของตกแต่ง</option>
+                            <option value="handicraft">ผ้าและเครื่องแต่งกาย</option>
+                            <option value="herb">สมุนไพรเพื่อสุขภาพ</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ingredients -->
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold text-gray-800">วัตถุดิบ</h2>
+                    <button type="button" id="add-ingredient-btn" class="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600">
+                        + เพิ่มวัตถุดิบ
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-12 gap-2 text-sm font-medium text-gray-600 mb-2">
+                    <div class="col-span-4">วัตถุดิบ</div>
+                    <div class="col-span-2">จำนวน</div>
+                    <div class="col-span-2">หน่วย</div>
+                    <div class="col-span-2">ราคา/หน่วย</div>
+                    <div class="col-span-1">รวม</div>
+                    <div class="col-span-1"></div>
+                </div>
+                
+                <div id="ingredients-container"></div>
+                
+                <div class="mt-4 pt-4 border-t flex justify-between items-center">
+                    <span class="font-medium">รวมต้นทุนวัตถุดิบ:</span>
+                    <span id="ingredients-total" class="text-2xl font-bold text-emerald-600">฿0.00</span>
+                </div>
+            </div>
+
+            <!-- Other Costs -->
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">ต้นทุนอื่นๆ</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">ผลผลิตที่ได้ (ชิ้น/แพ็ค)</label>
+                        <input type="number" id="yield-quantity" class="w-full p-3 border rounded-lg" value="1" min="1">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">ค่าบรรจุภัณฑ์ต่อชิ้น (฿)</label>
+                        <input type="number" id="packaging-cost" class="w-full p-3 border rounded-lg" value="0" step="0.01">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">ค่าฉลากต่อชิ้น (฿)</label>
+                        <input type="number" id="label-cost" class="w-full p-3 border rounded-lg" value="0" step="0.01">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">ค่าแรงรวม (฿)</label>
+                        <input type="number" id="labor-cost" class="w-full p-3 border rounded-lg" value="0" step="0.01">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">ค่าการตลาด (%)</label>
+                        <input type="number" id="marketing-percent" class="w-full p-3 border rounded-lg" value="12" step="1">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">กำไรที่ต้องการ (%)</label>
+                        <input type="number" id="profit-percent" class="w-full p-3 border rounded-lg" value="25" step="1">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex gap-4">
+                <button type="button" id="calculate-btn" class="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white py-4 rounded-xl font-semibold hover:from-emerald-600 hover:to-teal-600 transition">
+                    🧮 คำนวณราคา
+                </button>
+                <button type="button" id="save-btn" class="flex-1 bg-blue-500 text-white py-4 rounded-xl font-semibold hover:bg-blue-600 transition">
+                    💾 บันทึก
+                </button>
+                <button type="button" id="reset-btn" class="px-6 bg-gray-300 text-gray-700 py-4 rounded-xl font-semibold hover:bg-gray-400 transition">
+                    🔄 ล้าง
+                </button>
+            </div>
+
+            <!-- Results -->
+            <div id="results" class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl shadow-lg p-8 hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">📊 ผลการคำนวณ</h2>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center p-4 bg-white rounded-lg">
+                        <span class="font-medium">ต้นทุนวัตถุดิบต่อชิ้น:</span>
+                        <span id="result-cost-per-unit" class="text-xl font-bold text-gray-800">฿0.00</span>
+                    </div>
+                    <div class="flex justify-between items-center p-4 bg-white rounded-lg">
+                        <span class="font-medium">ต้นทุนรวมต่อชิ้น:</span>
+                        <span id="result-total-cost" class="text-xl font-bold text-gray-800">฿0.00</span>
+                    </div>
+                    <div class="flex justify-between items-center p-4 bg-white rounded-lg">
+                        <span class="font-medium">ค่าการตลาด:</span>
+                        <span id="result-marketing-cost" class="text-xl font-bold text-orange-600">฿0.00</span>
+                    </div>
+                    <div class="flex justify-between items-center p-4 bg-white rounded-lg">
+                        <span class="font-medium">กำไร:</span>
+                        <span id="result-profit-margin" class="text-xl font-bold text-green-600">฿0.00</span>
+                    </div>
+                    <div class="flex justify-between items-center p-6 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl text-white">
+                        <span class="text-xl font-bold">💰 ราคาขายแนะนำ:</span>
+                        <span id="result-recommended-price" class="text-3xl font-bold">฿0.00</span>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/costing.js"></script>
+</body>
+</html>

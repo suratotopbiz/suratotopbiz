@@ -1,0 +1,27 @@
+{
+  "name": "surat-otop-biz",
+  "version": "1.0.0",
+  "description": "ระบบจัดการธุรกิจสำหรับผู้ประกอบการ OTOP จังหวัดสุราษฎร์ธานี",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "dev": "live-server --port=8000",
+    "build": "echo 'No build step required'",
+    "deploy": "git push origin main"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/suratotopbiz.git"
+  },
+  "keywords": [
+    "otop",
+    "business",
+    "surat-thani",
+    "costing",
+    "accounting"
+  ],
+  "author": "สำนักงาน OTOP จังหวัดสุราษฎร์ธานี",
+  "license": "MIT",
+  "devDependencies": {},
+  "dependencies": {}
+}
