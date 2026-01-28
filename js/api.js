@@ -1,27 +1,27 @@
-// api.js - API Service Layer
+// api.js - API Service Layer (Fixed for Google Apps Script)
+
 const API = {
   baseURL: CONFIG.API_BASE_URL,
 
-  // Helper: Make HTTP request
+  /**
+   * ✅ แก้ไข: ใช้ POST เท่านั้น + ไม่ส่ง Content-Type header
+   * เพื่อหลีกเลี่ยง CORS preflight request
+   */
   async request(route, data = null, method = 'POST') {
     try {
-      let url = `${this.baseURL}?route=${route}`;
-      
-      const options = {
-        method: method,
-        headers: {
-          'Content-Type': 'application/json',
-        }
+      // สำหรับ GAS ต้องใช้ POST เสมอ
+      const requestBody = {
+        route: route,
+        ...(data || {})
       };
 
-      if (method === 'POST' && data) {
-        options.body = JSON.stringify({ ...data, route });
-      } else if (method === 'GET' && data) {
-        const params = new URLSearchParams(data);
-        url += `&${params.toString()}`;
-      }
+      const options = {
+        method: 'POST',
+        // ไม่ส่ง Content-Type เพื่อหลีกเลี่ยง preflight
+        body: JSON.stringify(requestBody)
+      };
 
-      const response = await fetch(url, options);
+      const response = await fetch(this.baseURL, options);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -52,7 +52,7 @@ const API = {
   },
 
   async checkPhoneExists(phone) {
-    return this.request('check-phone', { phone }, 'GET');
+    return this.request('check-phone', { phone });
   },
 
   // ========================
@@ -60,7 +60,7 @@ const API = {
   // ========================
 
   async getUserProfile(userId) {
-    return this.request('user-profile', { userId }, 'GET');
+    return this.request('user-profile', { userId });
   },
 
   async updateUserProfile(userId, updates) {
@@ -68,7 +68,7 @@ const API = {
   },
 
   async getAllUsers() {
-    return this.request('all-users', null, 'GET');
+    return this.request('all-users');
   },
 
   // ========================
@@ -80,11 +80,11 @@ const API = {
   },
 
   async getCostingList(userId) {
-    return this.request('costing-list', { userId }, 'GET');
+    return this.request('costing-list', { userId });
   },
 
   async getCostingById(costingId) {
-    return this.request('costing-detail', { costingId }, 'GET');
+    return this.request('costing-detail', { costingId });
   },
 
   async deleteCosting(costingId) {
@@ -104,7 +104,7 @@ const API = {
   },
 
   async getTransactions(userId, filters = {}) {
-    return this.request('transactions', { userId, ...filters }, 'GET');
+    return this.request('transactions', { userId, ...filters });
   },
 
   async getTransactionSummary(userId, startDate, endDate) {
@@ -112,7 +112,7 @@ const API = {
       userId, 
       startDate, 
       endDate 
-    }, 'GET');
+    });
   },
 
   async deleteTransaction(transactionId) {
@@ -128,11 +128,11 @@ const API = {
   // ========================
 
   async getDashboardData(userId) {
-    return this.request('dashboard', { userId }, 'GET');
+    return this.request('dashboard', { userId });
   },
 
   async getMonthlyStats(userId, year, month) {
-    return this.request('monthly-stats', { userId, year, month }, 'GET');
+    return this.request('monthly-stats', { userId, year, month });
   },
 
   // ========================
@@ -140,11 +140,11 @@ const API = {
   // ========================
 
   async getActiveNews() {
-    return this.request('active-news', null, 'GET');
+    return this.request('active-news');
   },
 
   async getAllNews() {
-    return this.request('all-news', null, 'GET');
+    return this.request('all-news');
   },
 
   async addNews(newsData) {
@@ -180,11 +180,11 @@ const API = {
   },
 
   async getSystemStats() {
-    return this.request('system-stats', null, 'GET');
+    return this.request('system-stats');
   },
 
   async exportData(dataType, filters = {}) {
-    return this.request('export-data', { dataType, ...filters }, 'GET');
+    return this.request('export-data', { dataType, ...filters });
   },
 
   // ========================
@@ -196,7 +196,7 @@ const API = {
   },
 
   async getFormulas(userId) {
-    return this.request('formulas', { userId }, 'GET');
+    return this.request('formulas', { userId });
   },
 
   async deleteFormula(formulaId) {
@@ -212,7 +212,7 @@ const API = {
   },
 
   async getNotes(userId) {
-    return this.request('notes', { userId }, 'GET');
+    return this.request('notes', { userId });
   },
 
   async deleteNote(noteId) {
@@ -228,28 +228,31 @@ const API = {
   },
 
   async getQuotations(userId) {
-    return this.request('quotations', { userId }, 'GET');
+    return this.request('quotations', { userId });
   },
 
   // ========================
   // Utility functions
   // ========================
 
-  // Test API connection
+  /**
+   * ✅ แก้ไข: ทดสอบการเชื่อมต่อ
+   */
   async testConnection() {
     try {
-      const response = await fetch(this.baseURL);
-      const data = await response.json();
-      return data;
+      const result = await this.request('status');
+      return result;
     } catch (error) {
       console.error('Connection test failed:', error);
       return { success: false, error: error.message };
     }
   },
 
-  // Get API status
+  /**
+   * ✅ แก้ไข: ดึงสถานะ API
+   */
   async getStatus() {
-    return this.request('status', null, 'GET');
+    return this.request('status');
   }
 };
 
