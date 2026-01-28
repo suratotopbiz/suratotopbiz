@@ -3,7 +3,7 @@
 
 const CONFIG = {
   // ⚠️ กรุณาแก้ไขค่าเหล่านี้ก่อนใช้งาน
-  API_BASE_URL: 'https://script.google.com/macros/s/AKfycbzhwlN31US9ZjyJ_ZNKJiAwykTTc2p9aWQxsGJxdC0uxj-ABNtZ86s5U3MxeE02nFC1/exec',  // URL จาก Google Apps Script Web App
+  API_BASE_URL: 'https://script.google.com/macros/s/AKfycbyyUrJSL0lsAeHMBK8z998cW0Z3G2pfjSrV2BsyiKvfHHFXCeK_35Jk6uuU3liYUnrn/exec',  // URL จาก Google Apps Script Web App
   SHEET_ID: '1poLCq2Qk_gWm38dFpPPjomAI4LBK5ZPJdqaPUrvdISY',             // Google Sheets ID
   
   // โครงสร้างฟิลด์ Users (สอดคล้องกับทะเบียน OTOP)
