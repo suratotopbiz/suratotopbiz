@@ -1,9 +1,10 @@
 /**
- * API Module for Surat OTOP Biz
+ * API Module for Surat OTOP Biz v2.2
  * ระบบจัดการการเชื่อมต่อกับ Google Apps Script Backend
  */
 
 const API = {
+  // ✅ แก้ไข: ใช้ชื่อตัวแปรที่ตรงกับ config.js
   baseURL: CONFIG.API_URL,
 
   /**
@@ -11,8 +12,13 @@ const API = {
    */
   async request(route, data = {}) {
     try {
+      console.log(`📤 API Request: ${route}`, data);
+      
       const response = await fetch(this.baseURL, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain', // ✅ แก้ไข CORS
+        },
         body: JSON.stringify({
           route: route,
           ...data
@@ -24,9 +30,11 @@ const API = {
       }
 
       const result = await response.json();
+      console.log(`📥 API Response: ${route}`, result);
+      
       return result;
     } catch (error) {
-      console.error('API Request Error:', error);
+      console.error('❌ API Request Error:', error);
       return {
         success: false,
         error: error.message || 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้'
@@ -381,11 +389,19 @@ const API = {
   }
 };
 
-// ทดสอบการเชื่อมต่อเมื่อโหลดหน้า (Development Mode)
-if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-  document.addEventListener('DOMContentLoaded', () => {
+// ✅ ทดสอบการเชื่อมต่อเมื่อโหลดหน้า
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('🚀 Surat OTOP Biz v2.2 Loaded');
+  console.log('📡 API URL:', API.baseURL);
+  
+  // ทดสอบ API (เฉพาะ development)
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
     API.testConnection().then(result => {
-      console.log('🔌 API Connection Test:', result);
+      if (result.success) {
+        console.log('✅ API Connection: OK');
+      } else {
+        console.error('❌ API Connection: Failed', result.error);
+      }
     });
-  });
-}
+  }
+});
