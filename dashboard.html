@@ -19,24 +19,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* Animation สำหรับประกาศเลื่อน */
         @keyframes marquee {
             0% { transform: translateX(100%); }
             100% { transform: translateX(-100%); }
         }
-        
         .marquee {
             animation: marquee 20s linear infinite;
             white-space: nowrap;
         }
-        
         .marquee:hover {
             animation-play-state: paused;
         }
-        
-        /* ✅ ปุ่ม + กลมๆ */
         .add-button {
-            position: relative;
             width: 56px;
             height: 56px;
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -44,11 +38,9 @@
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
             transition: all 0.3s ease;
         }
-        
         .add-button:active {
             transform: scale(0.95);
         }
-        
         .add-button:hover {
             box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
             transform: translateY(-2px);
@@ -113,11 +105,11 @@
 
     <div class="container mx-auto px-4 py-8 max-w-7xl mb-20">
         
-        <!-- ✅ Summary Card (1 การ์ดเดียว พร้อมเปอร์เซ็นต์) -->
+        <!-- Summary Card -->
         <div class="mb-8">
             <div class="bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl p-6 shadow-lg text-white">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- ส่วนซ้าย: กำไร/ขาดทุน + เปอร์เซ็นต์ -->
+                    <!-- กำไร/ขาดทุน -->
                     <div>
                         <div class="flex items-start mb-4">
                             <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mr-3">
@@ -130,7 +122,6 @@
                                 <h3 class="text-3xl font-bold" id="monthly-profit-value">฿0</h3>
                             </div>
                         </div>
-                        <!-- ✅ เปอร์เซ็นต์ -->
                         <div class="flex items-center text-sm" id="profit-percentage">
                             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
@@ -140,9 +131,8 @@
                         </div>
                     </div>
                     
-                    <!-- ส่วนขวา: รายละเอียด -->
+                    <!-- รายละเอียด -->
                     <div class="grid grid-cols-2 gap-4">
-                        <!-- รายรับ -->
                         <div class="bg-white bg-opacity-10 rounded-xl p-4">
                             <div class="flex items-center mb-2">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -152,8 +142,6 @@
                             </div>
                             <p class="text-xl font-bold" id="monthly-income-value">฿0</p>
                         </div>
-                        
-                        <!-- รายจ่าย -->
                         <div class="bg-white bg-opacity-10 rounded-xl p-4">
                             <div class="flex items-center mb-2">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -163,8 +151,6 @@
                             </div>
                             <p class="text-xl font-bold" id="monthly-expense-value">฿0</p>
                         </div>
-                        
-                        <!-- สินค้า -->
                         <div class="bg-white bg-opacity-10 rounded-xl p-4">
                             <div class="flex items-center mb-2">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -174,8 +160,6 @@
                             </div>
                             <p class="text-xl font-bold"><span id="product-count-value">0</span> รายการ</p>
                         </div>
-                        
-                        <!-- รายการทั้งหมด -->
                         <div class="bg-white bg-opacity-10 rounded-xl p-4">
                             <div class="flex items-center mb-2">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -209,7 +193,6 @@
                         <span class="font-medium text-gray-800">คำนวณต้นทุน</span>
                     </div>
                 </a>
-                
                 <a href="accounting.html" class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition group">
                     <div class="flex flex-col items-center text-center">
                         <div class="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition">
@@ -220,7 +203,6 @@
                         <span class="font-medium text-gray-800">บัญชีรายรับรายจ่าย</span>
                     </div>
                 </a>
-                
                 <a href="sales-tools.html" class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition group">
                     <div class="flex flex-col items-center text-center">
                         <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition">
@@ -231,7 +213,6 @@
                         <span class="font-medium text-gray-800">เครื่องมือขาย</span>
                     </div>
                 </a>
-                
                 <a href="analytics.html" class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition group">
                     <div class="flex flex-col items-center text-center">
                         <div class="w-14 h-14 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition">
@@ -272,44 +253,34 @@
                 </div>
             </div>
         </div>
-
     </div>
 
-    <!-- ✅ Bottom Navigation (Mobile) -->
+    <!-- Bottom Navigation -->
     <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
         <div class="flex justify-around items-center py-2 relative">
-            <!-- หน้าหลัก -->
             <a href="dashboard.html" class="flex flex-col items-center p-2 text-emerald-600">
                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
                 </svg>
                 <span class="text-xs mt-1">หน้าหลัก</span>
             </a>
-            
-            <!-- คำนวณ -->
             <a href="costing.html" class="flex flex-col items-center p-2 text-gray-600">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
                 </svg>
                 <span class="text-xs mt-1">คำนวณ</span>
             </a>
-            
-            <!-- ✅ ปุ่ม + กลางจอ -->
             <button onclick="Dashboard.showQuickMenu()" class="add-button flex items-center justify-center -mt-6">
                 <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path>
                 </svg>
             </button>
-            
-            <!-- บัญชี -->
             <a href="accounting.html" class="flex flex-col items-center p-2 text-gray-600">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
                 <span class="text-xs mt-1">บัญชี</span>
             </a>
-            
-            <!-- ✅ โปรไฟล์ -->
             <a href="profile.html" class="flex flex-col items-center p-2 text-gray-600">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
@@ -319,7 +290,7 @@
         </div>
     </nav>
 
-    <!-- ✅ Quick Menu Modal -->
+    <!-- Quick Menu Modal -->
     <div id="quick-menu-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden" onclick="Dashboard.closeQuickMenu()">
         <div class="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-white rounded-2xl shadow-2xl p-4 w-11/12 max-w-sm" onclick="event.stopPropagation()">
             <div class="text-center mb-4">
@@ -386,7 +357,6 @@
     <script src="js/auth.js"></script>
     
     <script>
-        // Dashboard Script
         const Dashboard = {
             data: {
                 user: null,
@@ -407,7 +377,6 @@
                     window.location.href = 'index.html';
                     return;
                 }
-
                 this.data.user = Auth.getUser();
                 this.renderUserInfo();
                 await this.loadData();
@@ -435,14 +404,20 @@
 
             async loadSummary() {
                 try {
-                    this.data.summary = {
-                        monthlyIncome: 0,
-                        monthlyExpense: 0,
-                        monthlyProfit: 0,
-                        lastMonthProfit: 0,
-                        productCount: 0,
-                        transactionCount: 0
-                    };
+                    const user = this.data.user;
+                    const result = await API.getDashboardData(user.userId);
+                    
+                    if (result.success && result.data) {
+                        this.data.summary = {
+                            monthlyIncome: result.data.monthlyIncome || 0,
+                            monthlyExpense: result.data.monthlyExpense || 0,
+                            productCount: result.data.productCount || 0,
+                            transactionCount: result.data.transactionCount || 0,
+                            lastMonthProfit: 0
+                        };
+                    } else {
+                        console.error('Load summary failed:', result.error);
+                    }
                     this.renderSummary();
                 } catch (error) {
                     console.error('Load summary error:', error);
@@ -457,7 +432,6 @@
                 document.getElementById('monthly-profit-value').textContent = 
                     '฿' + profit.toLocaleString('th-TH');
                 
-                // ✅ คำนวณเปอร์เซ็นต์
                 const lastMonthProfit = summary.lastMonthProfit || 0;
                 let percentChange = 0;
                 let isIncrease = true;
@@ -470,14 +444,16 @@
                 }
                 
                 const percentElement = document.getElementById('profit-percentage');
-                percentElement.innerHTML = `
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                              d="${isIncrease ? 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' : 'M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6'}"></path>
-                    </svg>
-                    <span>${isIncrease ? '+' : ''}${percentChange.toFixed(1)}%</span>
-                    <span class="ml-2 text-emerald-100">จากเดือนที่แล้ว</span>
-                `;
+                if (percentElement) {
+                    percentElement.innerHTML = `
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="${isIncrease ? 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' : 'M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6'}"></path>
+                        </svg>
+                        <span>${isIncrease ? '+' : ''}${percentChange.toFixed(1)}%</span>
+                        <span class="ml-2 text-emerald-100">จากเดือนที่แล้ว</span>
+                    `;
+                }
                 
                 document.getElementById('product-count-value').textContent = 
                     summary.productCount.toLocaleString('th-TH');
@@ -491,12 +467,15 @@
 
             async loadTransactions() {
                 try {
-                    const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
                     const user = this.data.user;
-                    this.data.transactions = transactions
-                        .filter(tx => tx.userId === user.userId)
-                        .sort((a, b) => new Date(b.date) - new Date(a.date))
-                        .slice(0, 10);
+                    const result = await API.getTransactions(user.userId, 10);
+                    
+                    if (result.success && result.data) {
+                        this.data.transactions = result.data;
+                    } else {
+                        console.error('Load transactions failed:', result.error);
+                        this.data.transactions = [];
+                    }
                     this.renderTransactions();
                 } catch (error) {
                     console.error('Load transactions error:', error);
@@ -541,7 +520,7 @@
                         </div>
                         <div class="text-right">
                             <div class="font-bold ${tx.type === 'income' ? 'text-emerald-600' : 'text-red-600'}">
-                                ${tx.type === 'income' ? '+' : '-'}฿${tx.amount.toLocaleString('th-TH')}
+                                ${tx.type === 'income' ? '+' : '-'}฿${parseFloat(tx.amount).toLocaleString('th-TH')}
                             </div>
                         </div>
                     </div>
