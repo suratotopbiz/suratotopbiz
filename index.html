@@ -49,37 +49,56 @@
             100% { transform: translateX(-50%) translateZ(0) scaleY(1); }
         }
         
-        /* ✅ แก้ไข: ป้องกันการเลื่อน */
+        /* ✅ เปิดการเลื่อนขึ้น-ลง */
         html, body {
             height: 100%;
-            overflow: hidden;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
         }
         
-        /* ✅ แก้ไข: Container ที่พอดีหน้าจอมือถือ */
+        /* ✅ Container ที่รองรับการเลื่อน */
         .main-container {
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
         }
         
-        /* ✅ แก้ไข: ปรับขนาดเนื้อหาให้พอดีมือถือ */
+        /* ✅ Smooth scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* ✅ ป้องกัน auto-zoom บน iOS */
         @media (max-width: 640px) {
+            input {
+                font-size: 16px !important;
+            }
+        }
+        
+        /* ✅ ปรับขนาดสำหรับมือถือ */
+        @media (max-width: 640px) {
+            .main-container {
+                padding-top: 1.5rem;
+                padding-bottom: 1.5rem;
+                align-items: flex-start;
+            }
+            
             .logo-box {
-                width: 80px !important;
-                height: 80px !important;
+                width: 64px !important;
+                height: 64px !important;
                 margin-bottom: 0.75rem !important;
             }
             
-            .logo-box svg {
-                width: 36px !important;
-                height: 36px !important;
+            .logo-box img {
+                padding: 0.5rem !important;
             }
             
-            /* ✅ ลดขนาด heading */
             .main-title {
-                font-size: 0.5rem !important;
+                font-size: 1.5rem !important;
                 margin-bottom: 0.5rem !important;
             }
             
@@ -92,14 +111,13 @@
                 margin-top: 0.25rem !important;
             }
             
-            /* ✅ ลด margin/padding */
             .header-section {
-                margin-bottom: 0.5rem !important;
+                margin-bottom: 1.5rem !important;
             }
             
             .login-card {
                 padding: 1.5rem !important;
-                border-radius: 0.5rem !important;
+                border-radius: 1.5rem !important;
             }
             
             .card-title {
@@ -121,10 +139,7 @@
             }
             
             .form-input {
-                padding-top: 0.625rem !important;
-                padding-bottom: 0.625rem !important;
-                padding-left: 2.75rem !important;
-                font-size: 0.9375rem !important;
+                padding: 0.75rem 1rem 0.75rem 2.875rem !important;
             }
             
             .input-icon-left {
@@ -132,8 +147,7 @@
             }
             
             .login-button {
-                padding-top: 0.875rem !important;
-                padding-bottom: 0.875rem !important;
+                padding: 0.875rem 1rem !important;
                 font-size: 0.9375rem !important;
                 margin-top: 1rem !important;
             }
@@ -164,22 +178,16 @@
             }
         }
         
-        /* ✅ สำหรับมือถือขนาดเล็กมาก (iPhone SE, etc.) */
-        @media (max-width: 375px) and (max-height: 667px) {
+        /* ✅ สำหรับมือถือขนาดเล็กมาก */
+        @media (max-width: 375px) {
             .logo-box {
-                width: 50px !important;
-                height: 50px !important;
-                margin-bottom: 0.5rem !important;
-            }
-            
-            .logo-box svg {
-                width: 30px !important;
-                height: 30px !important;
+                width: 56px !important;
+                height: 56px !important;
+                margin-bottom: 0.625rem !important;
             }
             
             .main-title {
-                font-size: 1.25rem !important;
-                margin-bottom: 0.375rem !important;
+                font-size: 1.375rem !important;
             }
             
             .subtitle {
@@ -191,7 +199,7 @@
             }
             
             .header-section {
-                margin-bottom: 1rem !important;
+                margin-bottom: 1.25rem !important;
             }
             
             .login-card {
@@ -208,18 +216,12 @@
             }
             
             .form-input {
-                padding-top: 0.5625rem !important;
-                padding-bottom: 0.5625rem !important;
+                padding: 0.6875rem 0.875rem 0.6875rem 2.75rem !important;
             }
             
             .login-button {
-                padding-top: 0.75rem !important;
-                padding-bottom: 0.75rem !important;
+                padding: 0.8125rem 0.875rem !important;
                 font-size: 0.875rem !important;
-            }
-            
-            .footer-section {
-                margin-top: 1rem !important;
             }
         }
     </style>
@@ -238,11 +240,12 @@
         <div class="w-full">
             <!-- Logo & Header -->
             <div class="text-center header-section mb-8">
-                <!-- ✅ เปลี่ยนเป็นรูปภาพโลโก้จริง -->
+                <!-- ✅ โลโก้จากไฟล์รูปภาพ -->
                 <div class="inline-flex items-center justify-center logo-box w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-3xl shadow-2xl mb-4 transform hover:scale-105 transition duration-300">
                     <img src="assets/logo/logo_suratotopbiz_w.png" 
                          alt="Surat OTOP Biz Logo" 
-                         class="w-full h-full object-contain p-2">
+                         class="w-full h-full object-contain"
+                         style="padding: 0.5rem;">
                 </div>
                 <h1 class="main-title text-2xl font-bold text-gray-800 mb-2">Surat OTOP Biz</h1>
                 <p class="subtitle text-gray-600">ระบบจัดการธุรกิจสำหรับผู้ประกอบการ OTOP</p>
@@ -373,6 +376,19 @@
             if (Auth.isLoggedIn()) {
                 window.location.href = 'dashboard.html';
             }
+            
+            // ✅ Auto-scroll เมื่อ focus input (สำหรับมือถือ)
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    setTimeout(() => {
+                        this.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center' 
+                        });
+                    }, 300);
+                });
+            });
         });
     </script>
 </body>
