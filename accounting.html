@@ -270,7 +270,7 @@
             if (!user || !user.userId) return;
             
             try {
-                const result = await API.getTransactions(user.userId, 100);
+                const result = await API.getTransactions(user.userId, 50);
                 
                 if (result.success) {
                     allTransactions = result.data || [];
