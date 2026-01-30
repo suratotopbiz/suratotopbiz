@@ -456,7 +456,7 @@
                     const user = this.data.user;
                     console.log('📝 Loading transactions for userId:', user.userId);
                     
-                    const result = await API.getTransactions(user.userId, 10);
+                    const result = await API.getTransactions(user.userId, 5);
                     console.log('📝 Result:', result);
                     
                     if (result.success && result.data) {
