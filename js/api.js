@@ -323,17 +323,15 @@ const API = {
    */
   async adminLogin(username, password) {
     try {
-      const result = await this.request('admin-login', {
-        username: username,
-        password: password
+      const response = await fetch(`${this.API_URL}?action=adminLogin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ username, password })
       });
-      return result;
+      
+      return await response.json();
     } catch (error) {
-      console.error('Admin login error:', error);
-      return {
-        success: false,
-        error: error.message
-      };
+      return { success: false, error: error.message };
     }
   },
 
