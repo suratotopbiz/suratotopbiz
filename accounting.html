@@ -73,7 +73,7 @@
         async function addTransaction() {
             const user = Auth.getCurrentUser();
             const data = {
-                userId: user.phone,
+                userId: user.userId,
                 type: document.getElementById('type').value,
                 amount: parseFloat(document.getElementById('amount').value),
                 category: document.getElementById('category').value,
