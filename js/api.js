@@ -322,17 +322,11 @@ const API = {
    * Admin เข้าสู่ระบบ
    */
   async adminLogin(username, password) {
-    try {
-      const response = await fetch(`${this.API_URL}?action=adminLogin`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ username, password })
-      });
-      
-      return await response.json();
-    } catch (error) {
-      return { success: false, error: error.message };
-    }
+      return await this.request('adminLogin', {
+        username: username,
+        password: password
+      }
+    );
   },
 
   /**
