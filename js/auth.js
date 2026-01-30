@@ -1,5 +1,5 @@
 /**
- * Authentication Module for Surat OTOP Biz
+ * Authentication Module for Surat OTOP Biz v2.3
  * จัดการ Login, Logout, และ Session
  */
 
@@ -17,7 +17,7 @@ const Auth = {
    */
   getUser() {
     try {
-      const userStr = localStorage.getItem(CONFIG.STORAGE_KEYS.USER);
+      const userStr = localStorage.getItem('surat_otop_user');
       if (!userStr) return null;
       
       const user = JSON.parse(userStr);
@@ -33,7 +33,7 @@ const Auth = {
    */
   setUser(user) {
     try {
-      localStorage.setItem(CONFIG.STORAGE_KEYS.USER, JSON.stringify(user));
+      localStorage.setItem('surat_otop_user', JSON.stringify(user));
       return true;
     } catch (error) {
       console.error('Set user error:', error);
@@ -46,19 +46,55 @@ const Auth = {
    */
   async login(phone, password) {
     try {
-      // เรียก API
+      // ✅ ถ้าไม่ได้ส่ง parameter มา ให้ดึงจาก form
+      if (!phone || !password) {
+        phone = document.getElementById('phone')?.value;
+        password = document.getElementById('password')?.value;
+      }
+      
+      // Validate
+      if (!phone || !password) {
+        alert('กรุณากรอกเบอร์โทรและรหัสผ่าน');
+        return {
+          success: false,
+          error: 'กรุณากรอกเบอร์โทรและรหัสผ่าน'
+        };
+      }
+      
+      // Show loading
+      if (typeof Utils !== 'undefined' && Utils.showLoading) {
+        Utils.showLoading('กำลังเข้าสู่ระบบ...');
+      }
+      
       const result = await API.login(phone, password);
       
+      // Hide loading
+      if (typeof Utils !== 'undefined' && Utils.hideLoading) {
+        Utils.hideLoading();
+      }
+      
       if (!result.success) {
+        alert(result.error || 'เข้าสู่ระบบไม่สำเร็จ');
         return result;
       }
       
       // บันทึกข้อมูลผู้ใช้
       this.setUser(result.data);
       
+      // Redirect to dashboard
+      window.location.href = 'dashboard.html';
+      
       return result;
     } catch (error) {
       console.error('Login error:', error);
+      
+      // Hide loading
+      if (typeof Utils !== 'undefined' && Utils.hideLoading) {
+        Utils.hideLoading();
+      }
+      
+      alert('เกิดข้อผิดพลาด: ' + error.message);
+      
       return {
         success: false,
         error: 'เกิดข้อผิดพลาด: ' + error.message
@@ -67,7 +103,7 @@ const Auth = {
   },
 
   /**
-   * Register (ตั้งรหัสผ่านครั้งแรก)
+   * Register
    */
   async register(phone, newPassword) {
     try {
@@ -87,12 +123,9 @@ const Auth = {
    */
   logout() {
     try {
-      localStorage.removeItem(CONFIG.STORAGE_KEYS.USER);
-      localStorage.removeItem(CONFIG.STORAGE_KEYS.TOKEN);
-      
-      // Redirect to login
+      localStorage.removeItem('surat_otop_user');
+      localStorage.removeItem('surat_otop_token');
       window.location.href = 'index.html';
-      
       return true;
     } catch (error) {
       console.error('Logout error:', error);
@@ -101,7 +134,7 @@ const Auth = {
   },
 
   /**
-   * เช็ค Session (ใช้ก่อนโหลดหน้าที่ต้อง Login)
+   * เช็ค Session
    */
   requireLogin() {
     if (!this.isLoggedIn()) {
@@ -138,3 +171,8 @@ const Auth = {
     return this.setUser(updatedUser);
   }
 };
+
+// ✅ Export
+if (typeof window !== 'undefined') {
+  window.Auth = Auth;
+}
