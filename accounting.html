@@ -3,64 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accounting - Surat OTOP Biz</title>
+    <title>บันทึกรายรับรายจ่าย - Surat OTOP Biz</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Prompt', sans-serif; }
+    </style>
 </head>
-<body class="bg-gray-50 font-['Prompt']">
+<body class="bg-gray-50">
+
+    <!-- Header -->
     <header class="bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg">
         <div class="container mx-auto px-4 py-4">
-            <div class="flex items-center">
-                <a href="dashboard.html" class="mr-4 p-2 hover:bg-white hover:bg-opacity-20 rounded-lg">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                    </svg>
-                </a>
-                <div>
-                    <h1 class="text-xl font-bold">บันทึกรายรับรายจ่าย</h1>
-                    <p class="text-sm text-blue-100">Accounting</p>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <a href="dashboard.html" class="mr-4 p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                    </a>
+                    <div>
+                        <h1 class="text-xl font-bold">บันทึกรายรับรายจ่าย</h1>
+                        <p class="text-sm text-blue-100">Accounting</p>
+                    </div>
                 </div>
             </div>
         </div>
     </header>
 
-    <div class="container mx-auto px-4 py-8 max-w-6xl">
-        <!-- Quick Add Transaction -->
+    <div class="container mx-auto px-4 py-8 max-w-6xl mb-20">
+        
+        <!-- Quick Add Form -->
         <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">เพิ่มรายการใหม่</h2>
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <div>
-                    <select id="type" class="w-full p-3 border rounded-lg">
-                        <option value="income">รายรับ</option>
-                        <option value="expense">รายจ่าย</option>
-                    </select>
+            <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                เพิ่มรายการใหม่
+            </h2>
+            
+            <form id="transaction-form" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- ประเภท -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            ประเภท <span class="text-red-500">*</span>
+                        </label>
+                        <select id="type" onchange="updateCategories()" 
+                                class="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                                required>
+                            <option value="">เลือกประเภท</option>
+                            <option value="income">รายรับ</option>
+                            <option value="expense">รายจ่าย</option>
+                        </select>
+                    </div>
+
+                    <!-- หมวดหมู่ -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            หมวดหมู่ <span class="text-red-500">*</span>
+                        </label>
+                        <select id="category" 
+                                class="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                                required disabled>
+                            <option value="">เลือกหมวดหมู่</option>
+                        </select>
+                    </div>
+
+                    <!-- จำนวนเงิน -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            จำนวนเงิน (บาท) <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-3 text-gray-500">฿</span>
+                            <input type="number" id="amount" 
+                                   placeholder="0.00" 
+                                   step="0.01" 
+                                   min="0.01"
+                                   class="w-full pl-8 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                                   required>
+                        </div>
+                    </div>
+
+                    <!-- วันที่ -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            วันที่ <span class="text-red-500">*</span>
+                        </label>
+                        <input type="date" id="date" 
+                               class="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                               required>
+                    </div>
                 </div>
+
+                <!-- รายละเอียด -->
                 <div>
-                    <input type="number" id="amount" placeholder="จำนวนเงิน" class="w-full p-3 border rounded-lg">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        รายละเอียด (ถ้ามี)
+                    </label>
+                    <input type="text" id="description" 
+                           placeholder="ระบุรายละเอียดเพิ่มเติม..." 
+                           class="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
                 </div>
-                <div>
-                    <select id="category" class="w-full p-3 border rounded-lg">
-                        <option>ขายสินค้า</option>
-                        <option>ค่าวัตถุดิบ</option>
-                        <option>ค่าแรงงาน</option>
-                    </select>
-                </div>
-                <div>
-                    <input type="text" id="description" placeholder="รายละเอียด" class="w-full p-3 border rounded-lg">
-                </div>
-                <div>
-                    <button onclick="addTransaction()" class="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600">
-                        ✓ บันทึก
+
+                <!-- ปุ่มบันทึก -->
+                <div class="flex gap-3">
+                    <button type="submit" 
+                            class="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-semibold py-3 rounded-xl transition duration-300 shadow-lg hover:shadow-xl flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        บันทึกรายการ
+                    </button>
+                    <button type="button" onclick="clearForm()" 
+                            class="px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition">
+                        ล้าง
                     </button>
                 </div>
+            </form>
+        </div>
+
+        <!-- Summary -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-emerald-50 p-4 rounded-xl text-center">
+                <div class="text-sm text-emerald-700">รายรับ</div>
+                <div class="text-2xl font-bold text-emerald-600" id="total-income">฿0</div>
+            </div>
+            <div class="bg-red-50 p-4 rounded-xl text-center">
+                <div class="text-sm text-red-700">รายจ่าย</div>
+                <div class="text-2xl font-bold text-red-600" id="total-expense">฿0</div>
+            </div>
+            <div class="bg-blue-50 p-4 rounded-xl text-center">
+                <div class="text-sm text-blue-700">กำไร/ขาดทุน</div>
+                <div class="text-2xl font-bold text-blue-600" id="total-profit">฿0</div>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-xl text-center">
+                <div class="text-sm text-gray-700">รายการ</div>
+                <div class="text-2xl font-bold text-gray-600" id="total-count">0</div>
             </div>
         </div>
 
         <!-- Transactions List -->
         <div class="bg-white rounded-2xl shadow-lg p-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">รายการทั้งหมด</h2>
-            <div id="transactions-list" class="space-y-2">
-                <p class="text-center text-gray-500 py-8">ยังไม่มีรายการ</p>
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-gray-800">รายการทั้งหมด</h2>
+                <button onclick="loadTransactions()" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                    🔄 รีเฟรช
+                </button>
+            </div>
+            
+            <div id="transactions-list" class="space-y-3">
+                <div class="text-center py-12 text-gray-400">
+                    <p>กำลังโหลดรายการ...</p>
+                </div>
             </div>
         </div>
     </div>
@@ -69,30 +167,192 @@
     <script src="js/utils.js"></script>
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
+    
     <script>
-        async function addTransaction() {
+        // หมวดหมู่แยกตามประเภท
+        const categories = {
+            income: ['ขายสินค้า', 'อื่นๆ'],
+            expense: ['ค่าวัตถุดิบ', 'ค่าแรงงาน', 'อื่นๆ']
+        };
+
+        let allTransactions = [];
+
+        // อัปเดตหมวดหมู่
+        function updateCategories() {
+            const type = document.getElementById('type').value;
+            const categorySelect = document.getElementById('category');
+            
+            categorySelect.innerHTML = '<option value="">เลือกหมวดหมู่</option>';
+            
+            if (!type) {
+                categorySelect.disabled = true;
+                return;
+            }
+            
+            categories[type].forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                categorySelect.appendChild(option);
+            });
+            
+            categorySelect.disabled = false;
+        }
+
+        // ล้างฟอร์ม
+        function clearForm() {
+            document.getElementById('transaction-form').reset();
+            document.getElementById('category').disabled = true;
+            document.getElementById('category').innerHTML = '<option value="">เลือกหมวดหมู่</option>';
+            document.getElementById('date').valueAsDate = new Date();
+        }
+
+        // บันทึกรายการ
+        document.getElementById('transaction-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const type = document.getElementById('type').value;
+            const category = document.getElementById('category').value;
+            const amount = document.getElementById('amount').value;
+            const description = document.getElementById('description').value;
+            const date = document.getElementById('date').value;
+            
+            // Validation
+            if (!type || !category) {
+                alert('❌ กรุณาเลือกประเภทและหมวดหมู่');
+                return;
+            }
+            
+            if (!amount || parseFloat(amount) <= 0) {
+                alert('❌ กรุณากรอกจำนวนเงินที่ถูกต้อง');
+                return;
+            }
+            
+            if (!date) {
+                alert('❌ กรุณาเลือกวันที่');
+                return;
+            }
+            
             const user = Auth.getCurrentUser();
+            if (!user || !user.userId) {
+                alert('❌ กรุณา Login ใหม่');
+                window.location.href = 'index.html';
+                return;
+            }
+            
             const data = {
                 userId: user.userId,
-                type: document.getElementById('type').value,
-                amount: parseFloat(document.getElementById('amount').value),
-                category: document.getElementById('category').value,
-                description: document.getElementById('description').value,
-                date: new Date().toISOString()
+                type: type,
+                category: category,
+                amount: parseFloat(amount),
+                description: description || '-',
+                date: date
             };
             
-            Utils.showLoading(true);
-            const result = await API.addTransaction(data);
-            Utils.showLoading(false);
+            try {
+                const result = await API.addTransaction(data);
+                
+                if (result.success) {
+                    alert('✅ บันทึกสำเร็จ!');
+                    clearForm();
+                    loadTransactions();
+                } else {
+                    alert('❌ บันทึกไม่สำเร็จ: ' + (result.error || 'เกิดข้อผิดพลาด'));
+                }
+            } catch (error) {
+                alert('❌ เกิดข้อผิดพลาด: ' + error.message);
+            }
+        });
+
+        // โหลดรายการ
+        async function loadTransactions() {
+            const user = Auth.getCurrentUser();
+            if (!user || !user.userId) return;
             
-            if (result.success) {
-                Utils.showAlert('บันทึกสำเร็จ!', 'success');
-                document.getElementById('amount').value = '';
-                document.getElementById('description').value = '';
-            } else {
-                Utils.showAlert(result.error, 'error');
+            try {
+                const result = await API.getTransactions(user.userId, 100);
+                
+                if (result.success) {
+                    allTransactions = result.data || [];
+                    renderTransactions(allTransactions);
+                    updateSummary(allTransactions);
+                }
+            } catch (error) {
+                console.error('Load error:', error);
             }
         }
+
+        // แสดงรายการ
+        function renderTransactions(transactions) {
+            const container = document.getElementById('transactions-list');
+            
+            if (!transactions || transactions.length === 0) {
+                container.innerHTML = '<div class="text-center py-12 text-gray-400"><p>ยังไม่มีรายการบันทึก</p></div>';
+                return;
+            }
+            
+            container.innerHTML = transactions.map(tx => {
+                const isIncome = tx.type === 'income';
+                const amount = parseFloat(tx.amount) || 0;
+                const date = new Date(tx.date);
+                
+                return `
+                    <div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-xl transition border-b border-gray-100">
+                        <div class="flex items-center flex-1">
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center mr-4 ${
+                                isIncome ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'
+                            }">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    ${isIncome 
+                                        ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path>'
+                                        : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6"></path>'
+                                    }
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-800">${tx.category}</div>
+                                <div class="text-sm text-gray-500">${tx.description || '-'} • ${date.toLocaleDateString('th-TH')}</div>
+                            </div>
+                        </div>
+                        <div class="text-right ml-4">
+                            <div class="text-xl font-bold ${isIncome ? 'text-emerald-600' : 'text-red-600'}">
+                                ${isIncome ? '+' : '-'}฿${amount.toLocaleString('th-TH', {minimumFractionDigits: 2})}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // อัปเดตสรุป
+        function updateSummary(transactions) {
+            let totalIncome = 0;
+            let totalExpense = 0;
+            
+            transactions.forEach(tx => {
+                const amount = parseFloat(tx.amount) || 0;
+                if (tx.type === 'income') totalIncome += amount;
+                else totalExpense += amount;
+            });
+            
+            document.getElementById('total-income').textContent = '฿' + totalIncome.toLocaleString('th-TH');
+            document.getElementById('total-expense').textContent = '฿' + totalExpense.toLocaleString('th-TH');
+            document.getElementById('total-profit').textContent = '฿' + (totalIncome - totalExpense).toLocaleString('th-TH');
+            document.getElementById('total-count').textContent = transactions.length;
+        }
+
+        // เริ่มต้น
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!Auth.isLoggedIn()) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            document.getElementById('date').valueAsDate = new Date();
+            document.getElementById('category').disabled = true;
+            
+            loadTransactions();
+        });
     </script>
 </body>
 </html>
