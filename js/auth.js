@@ -145,6 +145,13 @@ const Auth = {
   },
 
   /**
+   * ดึงข้อมูลผู้ใช้ปัจจุบัน (Alias สำหรับ getUser)
+   */
+  getCurrentUser() {
+    return this.getUser();
+  },
+
+  /**
    * ดึง User ID
    */
   getUserId() {
