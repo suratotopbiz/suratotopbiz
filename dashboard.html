@@ -444,34 +444,11 @@
                 const summary = this.data.summary;
                 const profit = summary.monthlyIncome - summary.monthlyExpense;
                 
-                // ✅ กำไร/ขาดทุน
                 document.getElementById('monthly-profit-value').textContent = '฿' + profit.toLocaleString('th-TH');
-                
-                // ✅ รายรับ
-                document.getElementById('monthly-income-value').textContent = '฿' + summary.monthlyIncome.toLocaleString('th-TH');
-                
-                // ✅ รายจ่าย
-                document.getElementById('monthly-expense-value').textContent = '฿' + summary.monthlyExpense.toLocaleString('th-TH');
-                
-                // ✅ สินค้า (แสดงจำนวน)
                 document.getElementById('product-count-value').textContent = summary.productCount.toLocaleString('th-TH');
-                
-                // ✅ รายการ (แสดงจำนวน)
                 document.getElementById('transaction-count-value').textContent = summary.transactionCount.toLocaleString('th-TH');
-                
-                // ✅ เปอร์เซ็นต์เปลี่ยนแปลง
-                const profitChange = summary.lastMonthProfit ? ((profit - summary.lastMonthProfit) / summary.lastMonthProfit * 100) : 0;
-                const profitPercentageEl = document.getElementById('profit-percentage');
-                if (profitPercentageEl) {
-                    const isPositive = profitChange >= 0;
-                    profitPercentageEl.innerHTML = `
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${isPositive ? 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' : 'M13 17h8m0 0V9m0 8l-8-8-4 4-6-6'}"></path>
-                        </svg>
-                        <span>${Math.abs(profitChange).toFixed(1)}%</span>
-                        <span class="ml-2 text-emerald-100">จากเดือนที่แล้ว</span>
-                    `;
-                }
+                document.getElementById('monthly-income-value').textContent = '฿' + summary.monthlyIncome.toLocaleString('th-TH');
+                document.getElementById('monthly-expense-value').textContent = '฿' + summary.monthlyExpense.toLocaleString('th-TH');
             },
 
             async loadTransactions() {
@@ -525,9 +502,13 @@
                     const amount = parseFloat(tx.amount) || 0;
                     const date = tx.date ? new Date(tx.date) : new Date();
                     
+                    // ✅ กำหนดข้อความประเภท
+                    const typeLabel = isIncome ? 'รายรับ' : 'รายจ่าย';
+                    
                     return `
                         <div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition border-b border-gray-100">
                             <div class="flex items-center flex-1">
+                                <!-- ไอคอน -->
                                 <div class="w-10 h-10 rounded-lg flex items-center justify-center mr-3 ${
                                     isIncome ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'
                                 }">
@@ -538,14 +519,33 @@
                                         }
                                     </svg>
                                 </div>
+                                
+                                <!-- ข้อมูลรายการ -->
                                 <div class="flex-1">
-                                    <div class="font-medium text-gray-800">${tx.description || tx.category || 'ไม่มีรายละเอียด'}</div>
-                                    <div class="text-sm text-gray-500">${tx.category || 'ไม่ระบุหมวดหมู่'} • ${date.toLocaleDateString('th-TH')}</div>
+                                    <!-- บรรทัดที่ 1: รายรับ/รายจ่าย • หมวดหมู่ -->
+                                    <div class="font-medium text-gray-800">
+                                        <span class="${isIncome ? 'text-emerald-600' : 'text-red-600'}">${typeLabel}</span>
+                                        ${tx.category ? ` • ${tx.category}` : ''}
+                                    </div>
+                                    
+                                    <!-- บรรทัดที่ 2: รายละเอียด • วันที่ -->
+                                    <div class="text-sm text-gray-500">
+                                        ${tx.description || '-'} • ${date.toLocaleDateString('th-TH', {
+                                            year: 'numeric',
+                                            month: 'short',
+                                            day: 'numeric'
+                                        })}
+                                    </div>
                                 </div>
                             </div>
+                            
+                            <!-- จำนวนเงิน -->
                             <div class="text-right">
                                 <div class="font-bold ${isIncome ? 'text-emerald-600' : 'text-red-600'}">
-                                    ${isIncome ? '+' : '-'}฿${amount.toLocaleString('th-TH')}
+                                    ${isIncome ? '+' : '-'}฿${amount.toLocaleString('th-TH', {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 2
+                                    })}
                                 </div>
                             </div>
                         </div>
