@@ -336,6 +336,29 @@
                 }
             },
 
+            async loadRecentTransactions() {
+            try {
+                const admin = this.data.admin;
+
+                // โหลด 5 รายการล่าสุด
+                const result = await API.getAdminAllTransactions(admin.adminId, 5);
+
+                if (result.success && result.data) {
+                    this.data.recentTransactions = result.data;
+                    this.renderRecentTransactions();
+                } else {
+                    console.error('❌ Load recent transactions failed:', result.error);
+                    this.data.recentTransactions = [];
+                    this.renderRecentTransactions();
+                }
+ 
+            } catch (error) {
+                console.error('❌ Load recent transactions error:', error);
+                this.data.recentTransactions = [];
+                this.renderRecentTransactions();
+            }
+        },
+
             renderRecentTransactions() {
                 const container = document.getElementById('recent-transactions');
                 const transactions = this.data.recentTransactions;
