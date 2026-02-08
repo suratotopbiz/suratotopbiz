@@ -1,4 +1,33 @@
-// costing.js - Smart Costing Module (FIXED: send userId + phone correctly)
+// costing.js - Smart Costing Module
+
+// Safety helpers (ใช้แทน Utils บางตัว ถ้าในหน้าไม่มี)
+const SafeUtils = {
+  generateId(prefix='id') {
+    return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
+  },
+  formatNumber(n, d=2) {
+    const x = Number(n || 0);
+    return x.toFixed(d);
+  },
+  formatCurrency(n) {
+    const x = Number(n || 0);
+    try { return x.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+    catch { return x.toFixed(2); }
+  },
+  showAlert(msg, type='info') {
+    // fallback แบบง่าย
+    alert(msg);
+  },
+  showLoading(on, msg='กำลังบันทึก...') {
+    try {
+      if (typeof Utils !== 'undefined' && Utils.showLoading && Utils.hideLoading) {
+        on ? SafeUtils.showLoading(msg) : Utils.hideLoading();
+      }
+    } catch (e) {}
+  }
+};
+
+
 const Costing = {
   ingredients: [],
   currentProduct: null,
@@ -10,23 +39,32 @@ const Costing = {
   },
 
   setupEventListeners() {
+    // Category change
     document.getElementById('category').addEventListener('change', (e) => {
       this.updateDefaultPercents(e.target.value);
     });
 
-    document.getElementById('add-ingredient-btn').addEventListener('click', () => {
+    // Add ingredient button
+    document.getElementById('add-ingredient-btn').addEventListener('click', (e) => {
+      e.preventDefault();
       this.addIngredientRow();
     });
 
-    document.getElementById('calculate-btn').addEventListener('click', () => {
+    // Calculate button
+    document.getElementById('calculate-btn').addEventListener('click', (e) => {
+      e.preventDefault();
       this.calculate();
     });
 
-    document.getElementById('save-btn').addEventListener('click', () => {
+    // Save button
+    document.getElementById('save-btn').addEventListener('click', (e) => {
+      e.preventDefault();
       this.save();
     });
 
-    document.getElementById('reset-btn').addEventListener('click', () => {
+    // Reset button
+    document.getElementById('reset-btn').addEventListener('click', (e) => {
+      e.preventDefault();
       this.reset();
     });
   },
@@ -34,29 +72,29 @@ const Costing = {
   updateDefaultPercents(category) {
     const marketing = CONFIG.DEFAULTS.MARKETING_PERCENT[category] || 10;
     const profit = CONFIG.DEFAULTS.PROFIT_PERCENT[category] || 25;
-
+    
     document.getElementById('marketing-percent').value = marketing;
     document.getElementById('profit-percent').value = profit;
   },
 
   addIngredientRow(data = null) {
-    const id = data?.id || Utils.generateId('ing');
+    const id = data?.id || (Utils && Utils.generateId ? Utils.generateId : SafeUtils.generateId)('ing');
     const row = document.createElement('div');
     row.className = 'ingredient-row grid grid-cols-12 gap-2 items-end mb-3';
     row.dataset.id = id;
-
+    
     row.innerHTML = `
       <div class="col-span-4">
-        <input type="text"
-               class="w-full p-2 border rounded-lg text-sm"
-               placeholder="วัตถุดิบ"
+        <input type="text" 
+               class="w-full p-2 border rounded-lg text-sm" 
+               placeholder="วัตถุดิบ" 
                value="${data?.name || ''}"
                data-field="name">
       </div>
       <div class="col-span-2">
-        <input type="number"
-               class="w-full p-2 border rounded-lg text-sm"
-               placeholder="จำนวน"
+        <input type="number" 
+               class="w-full p-2 border rounded-lg text-sm" 
+               placeholder="จำนวน" 
                value="${data?.quantity || ''}"
                data-field="quantity"
                step="0.01">
@@ -67,32 +105,31 @@ const Costing = {
         </select>
       </div>
       <div class="col-span-2">
-        <input type="number"
-               class="w-full p-2 border rounded-lg text-sm"
-               placeholder="ราคา/หน่วย"
+        <input type="number" 
+               class="w-full p-2 border rounded-lg text-sm" 
+               placeholder="ราคา/หน่วย" 
                value="${data?.pricePerUnit || ''}"
                data-field="pricePerUnit"
                step="0.01">
       </div>
       <div class="col-span-1">
-        <input type="text"
-               class="w-full p-2 border rounded-lg text-sm bg-gray-50 font-medium"
-               readonly
+        <input type="text" 
+               class="w-full p-2 border rounded-lg text-sm bg-gray-50 font-medium" 
+               readonly 
                value="0"
                data-field="total">
       </div>
       <div class="col-span-1 text-center">
-        <button onclick="Costing.removeIngredient('${id}')"
+        <button onclick="Costing.removeIngredient('${id}')" 
                 class="text-red-500 hover:text-red-700 p-2">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-            </path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
           </svg>
         </button>
       </div>
     `;
 
+    // Add event listeners for auto-calculation
     row.querySelectorAll('input[data-field], select[data-field]').forEach(input => {
       input.addEventListener('input', () => {
         this.calculateRowTotal(row);
@@ -102,7 +139,7 @@ const Costing = {
     });
 
     document.getElementById('ingredients-container').appendChild(row);
-
+    
     if (data) {
       this.calculateRowTotal(row);
     }
@@ -112,8 +149,8 @@ const Costing = {
     const quantity = parseFloat(row.querySelector('[data-field="quantity"]').value) || 0;
     const pricePerUnit = parseFloat(row.querySelector('[data-field="pricePerUnit"]').value) || 0;
     const total = quantity * pricePerUnit;
-
-    row.querySelector('[data-field="total"]').value = Utils.formatNumber(total, 2);
+    
+    row.querySelector('[data-field="total"]').value = (Utils && Utils.formatNumber ? Utils.formatNumber : SafeUtils.formatNumber)(total, 2);
     return total;
   },
 
@@ -129,7 +166,7 @@ const Costing = {
   getIngredientsData() {
     const rows = document.querySelectorAll('.ingredient-row');
     const ingredients = [];
-
+    
     rows.forEach(row => {
       const name = row.querySelector('[data-field="name"]').value;
       if (name.trim()) {
@@ -142,32 +179,35 @@ const Costing = {
         });
       }
     });
-
+    
     return ingredients;
   },
 
   updateSummary() {
     const ingredients = this.getIngredientsData();
     const ingredientsTotal = ingredients.reduce((sum, ing) => sum + ing.total, 0);
-
-    document.getElementById('ingredients-total').textContent = Utils.formatCurrency(ingredientsTotal);
+    
+    document.getElementById('ingredients-total').textContent = (Utils && Utils.formatCurrency ? Utils.formatCurrency : SafeUtils.formatCurrency)(ingredientsTotal);
   },
 
   calculate() {
+    // Get form data
     const productName = document.getElementById('product-name').value.trim();
     const category = document.getElementById('category').value;
     const ingredients = this.getIngredientsData();
-
+    
+    // Validation
     if (!productName) {
-      Utils.showAlert('กรุณากรอกชื่อสินค้า', 'warning');
+      (Utils && Utils.showAlert ? Utils.showAlert : SafeUtils.showAlert)('กรุณากรอกชื่อสินค้า', 'warning');
       return;
     }
-
+    
     if (ingredients.length === 0) {
-      Utils.showAlert('กรุณาเพิ่มวัตถุดิบอย่างน้อย 1 รายการ', 'warning');
+      (Utils && Utils.showAlert ? Utils.showAlert : SafeUtils.showAlert)('กรุณาเพิ่มวัตถุดิบอย่างน้อย 1 รายการ', 'warning');
       return;
     }
 
+    // Get all costs
     const ingredientsTotal = ingredients.reduce((sum, ing) => sum + ing.total, 0);
     const yieldQuantity = parseFloat(document.getElementById('yield-quantity').value) || 1;
     const packagingCost = parseFloat(document.getElementById('packaging-cost').value) || 0;
@@ -176,19 +216,22 @@ const Costing = {
     const marketingPercent = parseFloat(document.getElementById('marketing-percent').value) || 0;
     const profitPercent = parseFloat(document.getElementById('profit-percent').value) || 0;
 
+    // Calculate
     const costPerUnit = ingredientsTotal / yieldQuantity;
     const totalCostPerUnit = costPerUnit + packagingCost + labelCost + (laborCost / yieldQuantity);
     const marketingCost = totalCostPerUnit * (marketingPercent / 100);
     const profitMargin = (totalCostPerUnit + marketingCost) * (profitPercent / 100);
     const recommendedPrice = totalCostPerUnit + marketingCost + profitMargin;
 
+    // Display results
     document.getElementById('results').classList.remove('hidden');
-    document.getElementById('result-cost-per-unit').textContent = Utils.formatCurrency(costPerUnit);
-    document.getElementById('result-total-cost').textContent = Utils.formatCurrency(totalCostPerUnit);
-    document.getElementById('result-marketing-cost').textContent = Utils.formatCurrency(marketingCost);
-    document.getElementById('result-profit-margin').textContent = Utils.formatCurrency(profitMargin);
-    document.getElementById('result-recommended-price').textContent = Utils.formatCurrency(recommendedPrice);
+    document.getElementById('result-cost-per-unit').textContent = (Utils && Utils.formatCurrency ? Utils.formatCurrency : SafeUtils.formatCurrency)(costPerUnit);
+    document.getElementById('result-total-cost').textContent = (Utils && Utils.formatCurrency ? Utils.formatCurrency : SafeUtils.formatCurrency)(totalCostPerUnit);
+    document.getElementById('result-marketing-cost').textContent = (Utils && Utils.formatCurrency ? Utils.formatCurrency : SafeUtils.formatCurrency)(marketingCost);
+    document.getElementById('result-profit-margin').textContent = (Utils && Utils.formatCurrency ? Utils.formatCurrency : SafeUtils.formatCurrency)(profitMargin);
+    document.getElementById('result-recommended-price').textContent = (Utils && Utils.formatCurrency ? Utils.formatCurrency : SafeUtils.formatCurrency)(recommendedPrice);
 
+    // Store current calculation
     this.currentProduct = {
       productName,
       category,
@@ -208,77 +251,50 @@ const Costing = {
       }
     };
 
-    Utils.showAlert('คำนวณเรียบร้อยแล้ว!', 'success');
+    (Utils && Utils.showAlert ? Utils.showAlert : SafeUtils.showAlert)('คำนวณเรียบร้อยแล้ว!', 'success');
   },
 
   async save() {
     if (!this.currentProduct) {
-      Utils.showAlert('กรุณาคำนวณก่อนบันทึก', 'warning');
+      (Utils && Utils.showAlert ? Utils.showAlert : SafeUtils.showAlert)('กรุณาคำนวณก่อนบันทึก', 'warning');
       return;
     }
 
     const user = Auth.getCurrentUser();
     if (!user) {
-      Utils.showAlert('กรุณาเข้าสู่ระบบ', 'error');
-      return;
-    }
-
-    // ✅ เตรียมค่า userId และ phone ให้ถูกต้อง
-    const userId = user.userId || '';
-    const phone = (user.phone || user.userPhone || '').toString();
-
-    if (!phone) {
-      Utils.showAlert('ไม่พบเบอร์โทรของผู้ใช้ใน session', 'error');
+      (Utils && Utils.showAlert ? Utils.showAlert : SafeUtils.showAlert)('กรุณาเข้าสู่ระบบ', 'error');
       return;
     }
 
     try {
-      Utils.showLoading(true, 'กำลังบันทึก...');
+      SafeUtils.showLoading(true, 'กำลังบันทึก...');
 
-      const payload = {
-        // ✅ ส่งให้ backend ครบ: userId + phone
-        userId: userId,
-        phone: phone,
-
-        // ✅ เพื่อเข้ากับ Smart_Costing เดิมที่ใช้ header user_phone
-        user_phone: phone,
-
-        // data ของสินค้า
-        product_name: this.currentProduct.productName,
-        category: this.currentProduct.category,
-        ingredients_data: this.currentProduct.ingredients,
-        yield_quantity: this.currentProduct.yieldQuantity,
-        packaging_cost: this.currentProduct.packagingCost,
-        label_cost: this.currentProduct.labelCost,
-        labor_cost: this.currentProduct.laborCost,
-        marketing_percent: this.currentProduct.marketingPercent,
-        profit_percent: this.currentProduct.profitPercent,
-
-        // เก็บผลลัพธ์ไว้ด้วย (เผื่อใช้งานหน้าอื่น)
-        results: this.currentProduct.results,
-
+      const data = {
+        userId: user.phone,
+        ...this.currentProduct,
         createdAt: new Date().toISOString()
       };
 
-      const result = await API.saveCosting(payload);
+      const result = await API.saveCosting(data);
 
       if (result.success) {
-        Utils.showAlert('บันทึกสำเร็จ!', 'success');
+        (Utils && Utils.showAlert ? Utils.showAlert : SafeUtils.showAlert)('บันทึกสำเร็จ!', 'success');
         this.clearDraft();
-
+        
         setTimeout(() => {
           if (confirm('ต้องการสร้างใบเสนอราคาหรือไม่?')) {
             window.location.href = 'sales-tools.html';
           }
         }, 1000);
       } else {
-        Utils.showAlert(result.error || 'บันทึกไม่สำเร็จ', 'error');
+        (Utils && Utils.showAlert ? Utils.showAlert : SafeUtils.showAlert)(result.error || 'บันทึกไม่สำเร็จ', 'error');
       }
+
     } catch (error) {
       console.error('Save error:', error);
-      Utils.showAlert('เกิดข้อผิดพลาด', 'error');
+      (Utils && Utils.showAlert ? Utils.showAlert : SafeUtils.showAlert)('เกิดข้อผิดพลาด', 'error');
     } finally {
-      Utils.showLoading(false);
+      SafeUtils.showLoading(false);
     }
   },
 
@@ -290,7 +306,7 @@ const Costing = {
       this.currentProduct = null;
       this.clearDraft();
       this.addIngredientRow();
-      Utils.showAlert('ล้างข้อมูลแล้ว', 'info');
+      (Utils && Utils.showAlert ? Utils.showAlert : SafeUtils.showAlert)('ล้างข้อมูลแล้ว', 'info');
     }
   },
 
@@ -306,7 +322,7 @@ const Costing = {
       marketingPercent: document.getElementById('marketing-percent').value,
       profitPercent: document.getElementById('profit-percent').value
     };
-
+    
     localStorage.setItem(CONFIG.STORAGE_KEYS.COSTING_DRAFT, JSON.stringify(draft));
   },
 
@@ -315,7 +331,7 @@ const Costing = {
     if (draft) {
       try {
         const data = JSON.parse(draft);
-
+        
         document.getElementById('product-name').value = data.productName || '';
         document.getElementById('category').value = data.category || 'food';
         document.getElementById('yield-quantity').value = data.yieldQuantity || '';
@@ -324,13 +340,13 @@ const Costing = {
         document.getElementById('labor-cost').value = data.laborCost || '';
         document.getElementById('marketing-percent').value = data.marketingPercent || 12;
         document.getElementById('profit-percent').value = data.profitPercent || 25;
-
+        
         if (data.ingredients && data.ingredients.length > 0) {
           data.ingredients.forEach(ing => this.addIngredientRow(ing));
         } else {
           this.addIngredientRow();
         }
-
+        
         this.updateSummary();
       } catch (error) {
         console.error('Error loading draft:', error);
