@@ -444,11 +444,34 @@
                 const summary = this.data.summary;
                 const profit = summary.monthlyIncome - summary.monthlyExpense;
                 
+                // ✅ กำไร/ขาดทุน
                 document.getElementById('monthly-profit-value').textContent = '฿' + profit.toLocaleString('th-TH');
-                document.getElementById('product-count-value').textContent = summary.productCount.toLocaleString('th-TH');
-                document.getElementById('transaction-count-value').textContent = summary.transactionCount.toLocaleString('th-TH');
+                
+                // ✅ รายรับ
                 document.getElementById('monthly-income-value').textContent = '฿' + summary.monthlyIncome.toLocaleString('th-TH');
+                
+                // ✅ รายจ่าย
                 document.getElementById('monthly-expense-value').textContent = '฿' + summary.monthlyExpense.toLocaleString('th-TH');
+                
+                // ✅ สินค้า (แสดงจำนวน)
+                document.getElementById('product-count-value').textContent = summary.productCount.toLocaleString('th-TH');
+                
+                // ✅ รายการ (แสดงจำนวน)
+                document.getElementById('transaction-count-value').textContent = summary.transactionCount.toLocaleString('th-TH');
+                
+                // ✅ เปอร์เซ็นต์เปลี่ยนแปลง
+                const profitChange = summary.lastMonthProfit ? ((profit - summary.lastMonthProfit) / summary.lastMonthProfit * 100) : 0;
+                const profitPercentageEl = document.getElementById('profit-percentage');
+                if (profitPercentageEl) {
+                    const isPositive = profitChange >= 0;
+                    profitPercentageEl.innerHTML = `
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${isPositive ? 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' : 'M13 17h8m0 0V9m0 8l-8-8-4 4-6-6'}"></path>
+                        </svg>
+                        <span>${Math.abs(profitChange).toFixed(1)}%</span>
+                        <span class="ml-2 text-emerald-100">จากเดือนที่แล้ว</span>
+                    `;
+                }
             },
 
             async loadTransactions() {
