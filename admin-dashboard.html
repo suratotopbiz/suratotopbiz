@@ -133,9 +133,7 @@
                     </div>
                     <p class="text-sm text-gray-500 mb-1">ยอดรวม (เดือนนี้)</p>
                     <p class="text-3xl font-bold text-gray-800" id="total-revenue">฿0</p>
-                    <p class="text-xs text-gray-400 mt-2">
-                        รายรับ-รายจ่าย
-                    </p>
+                    <p class="text-xs text-gray-400 mt-2">รายรับ-รายจ่าย</p>
                 </div>
             </div>
         </div>
@@ -266,7 +264,6 @@
 
             async init() {
                 try {
-                    // เช็ค Authentication
                     const adminData = localStorage.getItem('surat_otop_admin');
                     if (!adminData) {
                         window.location.href = 'admin.html';
@@ -274,13 +271,20 @@
                     }
 
                     this.data.admin = JSON.parse(adminData);
-                    this.renderAdminInfo();
 
-                    // โหลดข้อมูล
+                    // ✅ ถ้าไม่มี adminId ให้เด้งกลับไป login (กัน API Unauthorized แล้วค้าง)
+                    if (!this.data.admin || !this.data.admin.adminId) {
+                        console.warn('Missing adminId in localStorage. Redirecting to admin.html');
+                        localStorage.removeItem('surat_otop_admin');
+                        window.location.href = 'admin.html';
+                        return;
+                    }
+
+                    this.renderAdminInfo();
                     await this.loadData();
                 } catch (error) {
                     console.error('❌ Init error:', error);
-                    alert('เกิดข้อผิดพลาด: ' + error.message);
+                    alert('เกิดข้อผิดพลาด: ' + (error.message || error));
                 }
             },
 
@@ -295,8 +299,6 @@
             async loadData() {
                 this.showLoading();
                 try {
-                    // TODO: เรียก API เพื่อโหลดข้อมูล
-                    // สำหรับตอนนี้ใช้ข้อมูลทดสอบ
                     await this.loadStats();
                     await this.loadRecentUsers();
                     await this.loadRecentTransactions();
@@ -307,57 +309,138 @@
                 }
             },
 
+            // ✅ เพิ่มฟังก์ชันที่เดิม “ไม่มี” ทำให้สถิติไม่อัปเดต
+            renderStats() {
+                const s = this.data.stats || {};
+
+                document.getElementById('total-users').textContent =
+                    (s.totalUsers ?? 0).toLocaleString('th-TH');
+
+                document.getElementById('active-users').textContent =
+                    (s.activeUsers ?? 0).toLocaleString('th-TH');
+
+                document.getElementById('total-transactions').textContent =
+                    (s.totalTransactions ?? 0).toLocaleString('th-TH');
+
+                document.getElementById('total-products').textContent =
+                    (s.totalProducts ?? 0).toLocaleString('th-TH');
+
+                const revenue = (s.totalRevenue ?? 0);
+                document.getElementById('total-revenue').textContent =
+                    '฿' + revenue.toLocaleString('th-TH');
+            },
+
             async loadStats() {
                 try {
                     const admin = this.data.admin;
                     const result = await API.getAdminStats(admin.adminId);
-        
+
                     if (result.success && result.data) {
                         this.data.stats = result.data;
-                        this.renderStats();
+                    } else {
+                        console.error('❌ Load stats failed:', result?.error);
+                        this.data.stats = {
+                            totalUsers: 0,
+                            activeUsers: 0,
+                            totalTransactions: 0,
+                            totalProducts: 0,
+                            totalRevenue: 0
+                        };
                     }
-            
+
+                    this.renderStats(); // ✅ render เสมอ
                 } catch (error) {
                     console.error('❌ Load stats error:', error);
+                    this.data.stats = {
+                        totalUsers: 0,
+                        activeUsers: 0,
+                        totalTransactions: 0,
+                        totalProducts: 0,
+                        totalRevenue: 0
+                    };
+                    this.renderStats(); // ✅ กันค้าง 0 แบบไม่อัปเดต
                 }
             },
 
+            // ✅ เพิ่ม renderRecentUsers (เดิมไม่มี)
+            renderRecentUsers() {
+                const container = document.getElementById('recent-users');
+                const users = this.data.recentUsers;
+
+                if (!users || users.length === 0) {
+                    container.innerHTML = '<div class="text-center py-8 text-gray-400"><p>ยังไม่มีผู้ใช้</p></div>';
+                    return;
+                }
+
+                container.innerHTML = users.map(u => {
+                    const status = (u.status || '').toLowerCase();
+                    const isActive = status === 'active';
+                    const badgeClass = isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700';
+                    const badgeText = isActive ? 'Active' : (u.status || 'Ban');
+
+                    return `
+                        <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
+                            <div class="flex items-center flex-1">
+                                <div class="w-10 h-10 rounded-lg flex items-center justify-center mr-3 bg-blue-100 text-blue-700 font-bold">
+                                    ${(u.entrepreneursName || u.chairmanOwnerName || u.userId || 'U').toString().charAt(0)}
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="font-medium text-gray-800 truncate">
+                                        ${u.entrepreneursName || u.chairmanOwnerName || 'ไม่ระบุชื่อ'}
+                                    </div>
+                                    <div class="text-xs text-gray-500 truncate">
+                                        ${u.userId || ''} • ${u.phone || ''}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ml-3">
+                                <span class="text-xs px-2 py-1 rounded-full ${badgeClass}">${badgeText}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            },
+
+            // ✅ แก้ให้ render เสมอ (เดิม render เฉพาะตอน success)
             async loadRecentUsers() {
                 try {
                     const admin = this.data.admin;
                     const result = await API.getAdminUsers(admin.adminId, 5);
-        
+
                     if (result.success && result.data) {
                         this.data.recentUsers = result.data;
-                        this.renderRecentUsers();
+                    } else {
+                        console.error('❌ Load users failed:', result?.error);
+                        this.data.recentUsers = [];
                     }
+
+                    this.renderRecentUsers(); // ✅ render เสมอ
                 } catch (error) {
                     console.error('❌ Load users error:', error);
+                    this.data.recentUsers = [];
+                    this.renderRecentUsers(); // ✅ กันค้าง “กำลังโหลด...”
                 }
             },
 
             async loadRecentTransactions() {
-            try {
-                const admin = this.data.admin;
+                try {
+                    const admin = this.data.admin;
+                    const result = await API.getAdminAllTransactions(admin.adminId, 5);
 
-                // โหลด 5 รายการล่าสุด
-                const result = await API.getAdminAllTransactions(admin.adminId, 5);
+                    if (result.success && result.data) {
+                        this.data.recentTransactions = result.data;
+                    } else {
+                        console.error('❌ Load recent transactions failed:', result?.error);
+                        this.data.recentTransactions = [];
+                    }
 
-                if (result.success && result.data) {
-                    this.data.recentTransactions = result.data;
                     this.renderRecentTransactions();
-                } else {
-                    console.error('❌ Load recent transactions failed:', result.error);
+                } catch (error) {
+                    console.error('❌ Load recent transactions error:', error);
                     this.data.recentTransactions = [];
                     this.renderRecentTransactions();
                 }
- 
-            } catch (error) {
-                console.error('❌ Load recent transactions error:', error);
-                this.data.recentTransactions = [];
-                this.renderRecentTransactions();
-            }
-        },
+            },
 
             renderRecentTransactions() {
                 const container = document.getElementById('recent-transactions');
@@ -370,6 +453,8 @@
 
                 container.innerHTML = transactions.map(tx => {
                     const isIncome = tx.type === 'income';
+                    const amount = Number(tx.amount || 0);
+
                     return `
                         <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
                             <div class="flex items-center flex-1">
@@ -384,13 +469,13 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <div class="font-medium text-gray-800">${tx.category}</div>
-                                    <div class="text-xs text-gray-500">${tx.userId}</div>
+                                    <div class="font-medium text-gray-800">${tx.category || '-'}</div>
+                                    <div class="text-xs text-gray-500">${tx.userId || ''}</div>
                                 </div>
                             </div>
                             <div class="text-right">
                                 <div class="font-bold ${isIncome ? 'text-emerald-600' : 'text-red-600'}">
-                                    ${isIncome ? '+' : '-'}฿${tx.amount.toLocaleString('th-TH')}
+                                    ${isIncome ? '+' : '-'}฿${amount.toLocaleString('th-TH')}
                                 </div>
                             </div>
                         </div>
@@ -435,7 +520,6 @@
             }
         };
 
-        // เริ่มต้นเมื่อหน้าโหลดเสร็จ
         document.addEventListener('DOMContentLoaded', () => {
             AdminDashboard.init();
         });
