@@ -118,6 +118,20 @@ const API = {
     // Backend route ชื่อ admin-update-user-status :contentReference[oaicite:8]{index=8}
     return await this.request('admin-update-user-status', { adminId, userId, status });
   },
+
+  // ===== Admin News (ต้องมี backend routes เพิ่ม) =====
+  async adminNewsList(adminId) {
+    return await this.request('admin-news-list', { adminId });
+  },
+
+  async adminNewsUpsert(adminId, news) {
+    return await this.request('admin-news-upsert', { adminId, news });
+  },
+
+  async adminNewsDelete(adminId, newsId) {
+    return await this.request('admin-news-delete', { adminId, newsId });
+  },
+
 };
 
 // Optional: log ตอนโหลด

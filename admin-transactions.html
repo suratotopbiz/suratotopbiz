@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>รายการทั้งหมด - Admin | Surat OTOP Biz</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style> body{font-family:'Prompt',sans-serif;} </style>
+</head>
+<body class="bg-gray-50">
+
+<header class="bg-gradient-to-r from-slate-800 to-slate-900 text-white shadow-xl">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <a href="admin-dashboard.html" class="p-2 hover:bg-white/10 rounded-lg">←</a>
+      <div>
+        <div class="text-lg font-bold">รายการทั้งหมด</div>
+        <div class="text-sm text-slate-300">Admin Panel</div>
+      </div>
+    </div>
+    <div class="text-right">
+      <div class="text-xs text-slate-300">ผู้ดูแลระบบ</div>
+      <div class="font-medium" id="admin-name">Admin</div>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 py-6">
+  <div class="bg-white rounded-2xl shadow p-5">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="md:col-span-2">
+        <div class="text-sm text-gray-600 mb-2">ค้นหา (หมวดหมู่/คำอธิบาย/userId)</div>
+        <input id="q" class="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring"
+               placeholder="เช่น รายรับ, ค่าวัตถุดิบ, OTOP001"/>
+      </div>
+      <div>
+        <div class="text-sm text-gray-600 mb-2">ประเภท</div>
+        <select id="type" class="w-full px-4 py-3 border rounded-xl">
+          <option value="">ทั้งหมด</option>
+          <option value="income">รายรับ</option>
+          <option value="expense">รายจ่าย</option>
+        </select>
+      </div>
+      <div class="flex items-end gap-3">
+        <button id="btn-refresh" class="w-full px-4 py-3 rounded-xl bg-slate-800 text-white hover:bg-slate-900">
+          รีเฟรช
+        </button>
+      </div>
+    </div>
+
+    <div class="mt-5 overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead>
+          <tr class="text-left text-gray-500 border-b">
+            <th class="py-3 pr-4">วันที่</th>
+            <th class="py-3 pr-4">User ID</th>
+            <th class="py-3 pr-4">ประเภท</th>
+            <th class="py-3 pr-4">หมวดหมู่</th>
+            <th class="py-3 pr-4">คำอธิบาย</th>
+            <th class="py-3 pr-4 text-right">จำนวนเงิน</th>
+          </tr>
+        </thead>
+        <tbody id="rows">
+          <tr><td colspan="6" class="py-10 text-center text-gray-400">กำลังโหลด...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-4 flex items-center justify-between text-sm text-gray-600">
+      <div id="count">0 รายการ</div>
+      <div class="flex items-center gap-2">
+        <span>แสดง</span>
+        <select id="limit" class="border rounded-lg px-2 py-1">
+          <option value="100">100</option>
+          <option value="500">500</option>
+          <option value="2000">2000</option>
+          <option value="10000">10000</option>
+        </select>
+        <span>รายการ</span>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script>
+const KEY='surat_otop_admin';
+
+const Page = {
+  admin:null,
+  txs:[],
+
+  requireAuth(){
+    const raw=localStorage.getItem(KEY);
+    if(!raw){location.href='admin.html';return false;}
+    try{this.admin=JSON.parse(raw);}catch{localStorage.removeItem(KEY);location.href='admin.html';return false;}
+    if(!this.admin?.adminId){localStorage.removeItem(KEY);location.href='admin.html';return false;}
+    document.getElementById('admin-name').textContent=this.admin.username||'Admin';
+    return true;
+  },
+
+  fmtDate(d){
+    if(!d) return '';
+    const dt = new Date(d);
+    if(Number.isNaN(dt.getTime())) return '';
+    return dt.toLocaleDateString('th-TH');
+  },
+
+  badge(type){
+    const isIncome = type==='income';
+    return `<span class="text-xs px-2 py-1 rounded-full ${isIncome?'bg-emerald-100 text-emerald-700':'bg-red-100 text-red-700'}">
+      ${isIncome?'รายรับ':'รายจ่าย'}
+    </span>`;
+  },
+
+  filter(){
+    const q=document.getElementById('q').value.trim().toLowerCase();
+    const type=document.getElementById('type').value;
+    return this.txs.filter(t=>{
+      if(type && t.type!==type) return false;
+      if(!q) return true;
+      const hay=[t.userId,t.category,t.description,t.type].filter(Boolean).join(' ').toLowerCase();
+      return hay.includes(q);
+    });
+  },
+
+  render(){
+    const rows=document.getElementById('rows');
+    const list=this.filter();
+    document.getElementById('count').textContent=`${list.length.toLocaleString('th-TH')} รายการ`;
+
+    if(!list.length){
+      rows.innerHTML=`<tr><td colspan="6" class="py-10 text-center text-gray-400">ไม่พบข้อมูล</td></tr>`;
+      return;
+    }
+
+    rows.innerHTML=list.map(t=>{
+      const amt=Number(t.amount||0);
+      const isIncome=t.type==='income';
+      return `
+        <tr class="border-b hover:bg-gray-50">
+          <td class="py-3 pr-4">${this.fmtDate(t.date)}</td>
+          <td class="py-3 pr-4 font-medium text-slate-900">${t.userId||''}</td>
+          <td class="py-3 pr-4">${this.badge(t.type)}</td>
+          <td class="py-3 pr-4">${t.category||''}</td>
+          <td class="py-3 pr-4 text-gray-600">${t.description||''}</td>
+          <td class="py-3 pr-2 text-right font-bold ${isIncome?'text-emerald-600':'text-red-600'}">
+            ${isIncome?'+':'-'}฿${amt.toLocaleString('th-TH')}
+          </td>
+        </tr>
+      `;
+    }).join('');
+  },
+
+  async load(){
+    const limit=Number(document.getElementById('limit').value||500);
+    const res=await API.getAdminAllTransactions(this.admin.adminId, limit);
+    if(res.success && res.data){ this.txs=res.data; } else { this.txs=[]; console.error(res.error); }
+    this.render();
+  }
+};
+
+document.addEventListener('DOMContentLoaded', async ()=>{
+  if(!Page.requireAuth()) return;
+  document.getElementById('btn-refresh').addEventListener('click', ()=>Page.load());
+  document.getElementById('q').addEventListener('input', ()=>Page.render());
+  document.getElementById('type').addEventListener('change', ()=>Page.render());
+  document.getElementById('limit').addEventListener('change', ()=>Page.load());
+  await Page.load();
+});
+</script>
+</body>
+</html>

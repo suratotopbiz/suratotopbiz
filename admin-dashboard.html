@@ -483,26 +483,10 @@
                 }).join('');
             },
 
-            showUsers() {
-                alert('ฟีเจอร์ "จัดการผู้ใช้" กำลังพัฒนา\n\nจะเพิ่มในเวอร์ชันถัดไป:\n- ดูรายชื่อผู้ใช้ทั้งหมด\n- แก้ไขข้อมูลผู้ใช้\n- เปิด/ปิดการใช้งาน\n- รีเซ็ตรหัสผ่าน');
-            },
-
-            showTransactions() {
-                alert('ฟีเจอร์ "รายการทั้งหมด" กำลังพัฒนา\n\nจะเพิ่มในเวอร์ชันถัดไป:\n- ดูรายการทั้งหมด\n- กรองตามผู้ใช้\n- ส่งออกรายงาน\n- แก้ไข/ลบรายการ');
-            },
-
-            showProducts() {
-                alert('ฟีเจอร์ "สินค้าทั้งหมด" กำลังพัฒนา\n\nจะเพิ่มในเวอร์ชันถัดไป:\n- ดูสินค้าทั้งหมด\n- กรองตามผู้ใช้\n- ส่งออกรายงานต้นทุน\n- สถิติสินค้า');
-            },
-
-            manageNews() {
-                alert('ฟีเจอร์ "จัดการข่าวสาร" กำลังพัฒนา\n\nจะเพิ่มในเวอร์ชันถัดไป:\n- เพิ่ม/แก้ไข/ลบข่าว\n- เผยแพร่/ซ่อนข่าว\n- จัดลำดับข่าว\n- ตั้งเวลาแสดงข่าว');
-            },
-
-            async refresh() {
-                await this.loadData();
-                alert('รีเฟรชข้อมูลเรียบร้อย');
-            },
+            showUsers() { window.location.href = 'admin-users.html'; },
+            showTransactions() { window.location.href = 'admin-transactions.html'; },
+            showProducts() { window.location.href = 'admin-products.html'; },
+            manageNews() { window.location.href = 'admin-news.html'; },
 
             logout() {
                 if (confirm('ต้องการออกจากระบบ?')) {
