@@ -418,31 +418,10 @@
                 }
             },
 
-
-            // ✅ Fallback: ถ้า productCount จาก dashboard เป็น 0
-            // จะลองนับจาก costing-list โดยใช้ userId และเบอร์โทร (กันกรณีชีท Smart_Costing เก็บ user_phone)
-            async getProductCountFallback_(user) {
-                try {
-                    // 1) ลองด้วย userId
-                    const r1 = await API.getCostingList(user.userId);
-                    if (r1 && r1.success && Array.isArray(r1.data) && r1.data.length > 0) return r1.data.length;
-
-                    // 2) ถ้ามีเบอร์โทร ให้ลองส่งเบอร์โทรแทน userId (รองรับ backend ที่เก็บ phone ในคอลัมน์ userId/user_phone)
-                    const phone = (user.phone || user.userPhone || '').toString().replace(/\D/g, '');
-                    if (phone) {
-                        const r2 = await API.getCostingList(phone);
-                        if (r2 && r2.success && Array.isArray(r2.data) && r2.data.length > 0) return r2.data.length;
-                    }
-                } catch (e) {
-                    console.warn('Product count fallback failed:', e);
-                }
-                return 0;
-            },
-
             async loadSummary() {
                 try {
                     const user = this.data.user;
-                    const result = await API.getDashboardData(user.userId);
+                    const result = await API.request('get-dashboard', { userId: user.userId, phone: (user.phone || user.userPhone || '') });
                     
                     if (result.success && result.data) {
                         this.data.summary = {
@@ -452,12 +431,6 @@
                             transactionCount: result.data.transactionCount || 0,
                             lastMonthProfit: 0
                         };
-
-                        // ✅ ถ้า backend นับสินค้าได้ 0 ให้ลอง fallback (นับจากรายการ Smart Costing)
-                        if ((this.data.summary.productCount || 0) === 0) {
-                            const c = await this.getProductCountFallback_(user);
-                            if (c > 0) this.data.summary.productCount = c;
-                        }
                     }
                     
                     this.renderSummary();
