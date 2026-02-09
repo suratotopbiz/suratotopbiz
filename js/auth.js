@@ -107,7 +107,9 @@ const Auth = {
    */
   async register(phone, newPassword) {
     try {
+      if (typeof Utils !== 'undefined' && Utils.showLoading) Utils.showLoading('กำลังตั้งรหัสผ่าน...');
       const result = await API.register(phone, newPassword);
+      if (typeof Utils !== 'undefined' && Utils.hideLoading) Utils.hideLoading();
       return result;
     } catch (error) {
       console.error('Register error:', error);
@@ -177,6 +179,35 @@ const Auth = {
     const updatedUser = { ...user, ...updates };
     return this.setUser(updatedUser);
   }
+  ,
+  /**
+   * แสดงหน้าต่างตั้งรหัสผ่านครั้งแรก (Register)
+   */
+  showRegisterModal() {
+    // ถ้าไม่มี modal ในหน้า ให้สร้างแบบง่ายด้วย prompt
+    const phone = prompt('กรอกเบอร์โทร (ตั้งรหัสผ่านครั้งแรก):');
+    if (!phone) return;
+
+    const pass1 = prompt('ตั้งรหัสผ่านใหม่:');
+    if (!pass1) return;
+
+    const pass2 = prompt('ยืนยันรหัสผ่านใหม่อีกครั้ง:');
+    if (pass1 !== pass2) {
+      alert('รหัสผ่านไม่ตรงกัน');
+      return;
+    }
+
+    this.register(phone, pass1).then((result) => {
+      if (result && result.success) {
+        alert('ตั้งรหัสผ่านสำเร็จ! กรุณาเข้าสู่ระบบ');
+      } else {
+        alert('ตั้งรหัสผ่านไม่สำเร็จ: ' + (result?.error || 'ไม่ทราบสาเหตุ'));
+      }
+    }).catch((e) => {
+      alert('ตั้งรหัสผ่านไม่สำเร็จ: ' + (e.message || e));
+    });
+  }
+
 };
 
 // ✅ Export
