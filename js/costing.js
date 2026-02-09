@@ -241,9 +241,7 @@ const Costing = {
       Utils.showLoading(true, 'กำลังบันทึก...');
 
       const data = {
-        userId: user.userId,
-                phone: (user.phone || '').toString(),
-                user_phone: (user.phone || '').toString(),
+        userId: user.phone,
         ...this.currentProduct,
         createdAt: new Date().toISOString()
       };
