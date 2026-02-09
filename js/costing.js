@@ -22,6 +22,19 @@ const SafeUtils = {
   }
 };
 
+
+function showLoadingSafe(show, msg='') {
+  const message = (typeof msg === 'string') ? msg : '';
+  try {
+    const fn = (typeof Utils !== 'undefined' && Utils && typeof Utils.showLoading === 'function')
+      ? Utils.showLoading.bind(Utils)
+      : SafeUtils.showLoading.bind(SafeUtils);
+    return fn(!!show, message);
+  } catch (e) {
+    try { return SafeshowLoadingSafe(!!show, message); } catch (_) {}
+  }
+}
+
 function U_(key) {
   try {
     if (typeof Utils !== 'undefined' && Utils && typeof Utils[key] === 'function') return Utils[key].bind(Utils);
@@ -268,7 +281,7 @@ const Costing = {
     }
 
     try {
-      U_('showLoading')(true, 'กำลังบันทึก...');
+      showLoadingSafe(true, 'กำลังบันทึก...');
 
       const phone = String(user.phone || user.userPhone || '').trim();
       const data = {
@@ -298,7 +311,7 @@ const Costing = {
       console.error('Save error:', error);
       U_('showAlert')('เกิดข้อผิดพลาด', 'error');
     } finally {
-      U_('showLoading')(false);
+      showLoadingSafe(false);
     }
   },
 
