@@ -1,6 +1,6 @@
 /**
  * API Module (Frontend) - Compatible Mode
- * ✅ ส่งทั้ง route และ action เพื่อรองรับ Backend ได้ทั้ง 2 แบ
+ * ✅ ส่งทั้ง route และ action เพื่อรองรับ Backend ได้ทั้ง 2 แบบ
  */
 const API = {
   baseURL: (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : '',
