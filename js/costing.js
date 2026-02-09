@@ -1,4 +1,4 @@
-// costing.js - Smart Costing Modul
+// costing.js - Smart Costing Module
 const Costing = {
   ingredients: [],
   currentProduct: null,
