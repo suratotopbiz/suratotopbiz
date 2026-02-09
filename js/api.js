@@ -1,5 +1,5 @@
 /**
- * API Module for Surat OTOP Biz (Frontend) - Compatible mode
+ * API Module (Frontend) - Compatible Mode
  * ✅ ส่งทั้ง route และ action เพื่อรองรับ Backend ได้ทั้ง 2 แบบ
  */
 const API = {
@@ -10,52 +10,38 @@ const API = {
     const payload = { route, action: route, ...data };
 
     try {
-      console.log(`📤 API Request: ${route}`, payload);
-
-      if (!this.baseURL) {
-        throw new Error('CONFIG.API_URL ไม่ถูกตั้งค่า');
-      }
-
-      const response = await fetch(this.baseURL, {
+      if (!this.baseURL) throw new Error('CONFIG.API_URL ไม่ถูกตั้งค่า');
+      const res = await fetch(this.baseURL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify(payload),
       });
-
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-      const result = await response.json();
-      console.log(`📥 API Response: ${route}`, result);
-      return result;
-    } catch (error) {
-      console.error('❌ API Request Error:', error);
-      return { success: false, error: error.message || 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้' };
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      return await res.json();
+    } catch (e) {
+      console.error('API.request error:', e);
+      return { success: false, error: e.message || 'เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ' };
     }
   },
 
-  async testConnection() { return await this.request('status'); },
+  // Auth
+  login(phone, password) { return this.request('login', { phone, password }); },
+  register(phone, newPassword) { return this.request('register', { phone, newPassword }); },
 
-  async login(phone, password) { return await this.request('login', { phone, password }); },
-  async register(phone, newPassword) { return await this.request('register', { phone, newPassword }); },
+  // Dashboard
+  getDashboardData(userId, phone='') { return this.request('get-dashboard', { userId, phone }); },
 
-  async saveCosting(costingData) { return await this.request('save-costing', costingData); },
+  // Costing
+  saveCosting(data) { return this.request('save-costing', data); },
 
-  async addTransaction(transactionData) { return await this.request('add-transaction', transactionData); },
-  async getTransactions(userId, limit = 100) { return await this.request('get-transactions', { userId, limit }); },
+  // Transactions
+  addTransaction(data) { return this.request('add-transaction', data); },
+  getTransactions(userId, limit=100) { return this.request('get-transactions', { userId, limit }); },
 
-  async getDashboardData(userId) { return await this.request('get-dashboard', { userId }); },
-
-  async getActiveNews() { return await this.request('active-news'); },
-
-  async adminLogin(username, password) { return await this.request('adminLogin', { username, password }); },
-  async getAdminStats(adminId) { return await this.request('admin-stats', { adminId }); },
-  async getAdminUsers(adminId, limit = 10) { return await this.request('admin-users', { adminId, limit }); },
-  async getAdminAllTransactions(adminId, limit = 20) { return await this.request('admin-all-transactions', { adminId, limit }); },
-  async getAdminAllProducts(adminId, limit = 20) { return await this.request('admin-all-products', { adminId, limit }); },
-  async adminUpdateUserStatus(adminId, userId, status) { return await this.request('admin-update-user-status', { adminId, userId, status }); },
+  // Admin
+  adminLogin(username, password) { return this.request('adminLogin', { username, password }); },
+  getAdminStats(adminId) { return this.request('admin-stats', { adminId }); },
+  getAdminUsers(adminId, limit=50) { return this.request('admin-users', { adminId, limit }); },
+  getAdminAllTransactions(adminId, limit=50) { return this.request('admin-all-transactions', { adminId, limit }); },
+  adminUpdateUserStatus(adminId, userId, status) { return this.request('admin-update-user-status', { adminId, userId, status }); },
 };
-
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('🚀 Surat OTOP Biz Frontend Loaded');
-  console.log('📡 API URL:', API.baseURL);
-});
