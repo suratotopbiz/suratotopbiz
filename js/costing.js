@@ -1,4 +1,29 @@
 // costing.js - Smart Costing Module
+
+// Fallback utils (ถ้า Utils ไม่ถูกโหลดหรือไม่มีบางฟังก์ชัน)
+const SafeUtils = {
+  formatNumber(n, d = 2) {
+    const x = Number(n || 0);
+    if (!isFinite(x)) return (0).toFixed(d);
+    return x.toFixed(d);
+  },
+  formatCurrency(n) {
+    const x = Number(n || 0);
+    if (!isFinite(x)) return '฿0.00';
+    try {
+      return '฿' + x.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    } catch (e) {
+      return '฿' + x.toFixed(2);
+    }
+  },
+  generateId(prefix='id') {
+    return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
+  },
+  showAlert(msg) {
+    alert(msg);
+  }
+};
+
 const Costing = {
   ingredients: [],
   currentProduct: null,
@@ -16,26 +41,22 @@ const Costing = {
     });
 
     // Add ingredient button
-    document.getElementById('add-ingredient-btn').addEventListener('click', (e) => {
-      e.preventDefault();
+    document.getElementById('add-ingredient-btn').addEventListener('click', () => {
       this.addIngredientRow();
     });
 
     // Calculate button
-    document.getElementById('calculate-btn').addEventListener('click', (e) => {
-      e.preventDefault();
+    document.getElementById('calculate-btn').addEventListener('click', () => {
       this.calculate();
     });
 
     // Save button
-    document.getElementById('save-btn').addEventListener('click', (e) => {
-      e.preventDefault();
+    document.getElementById('save-btn').addEventListener('click', () => {
       this.save();
     });
 
     // Reset button
-    document.getElementById('reset-btn').addEventListener('click', (e) => {
-      e.preventDefault();
+    document.getElementById('reset-btn').addEventListener('click', () => {
       this.reset();
     });
   },
@@ -49,7 +70,7 @@ const Costing = {
   },
 
   addIngredientRow(data = null) {
-    const id = (data && data.id) ? data.id : ((typeof Utils !== 'undefined' && Utils.generateId) ? ((typeof Utils !== 'undefined' && Utils.generateId) ? Utils.generateId('ing') : `ing_${Date.now()}_${Math.random().toString(36).slice(2,7)}`) : `ing_${Date.now()}_${Math.random().toString(36).slice(2,7)}`);
+    const id = data?.id || (typeof Utils!=='undefined' && Utils.generateId ? Utils.generateId : SafeUtils.generateId)('ing');
     const row = document.createElement('div');
     row.className = 'ingredient-row grid grid-cols-12 gap-2 items-end mb-3';
     row.dataset.id = id;
@@ -102,14 +123,21 @@ const Costing = {
 
     // Add event listeners for auto-calculation
     row.querySelectorAll('input[data-field], select[data-field]').forEach(input => {
-      input.addEventListener('input', () => {
-        this.calculateRowTotal(row);
-        this.updateSummary();
-        this.saveDraft();
-      });
+      const handler = () => {
+        try {
+          this.calculateRowTotal(row);
+          this.updateSummary();
+          this.saveDraft();
+        } catch (err) {
+          console.error('calculate ingredient row error:', err);
+        }
+      };
+      input.addEventListener('input', handler);
+      input.addEventListener('change', handler);
     });
 
     document.getElementById('ingredients-container').appendChild(row);
+    this.updateSummary();
     
     if (data) {
       this.calculateRowTotal(row);
@@ -121,7 +149,7 @@ const Costing = {
     const pricePerUnit = parseFloat(row.querySelector('[data-field="pricePerUnit"]').value) || 0;
     const total = quantity * pricePerUnit;
     
-    row.querySelector('[data-field="total"]').value = Utils.formatNumber(total, 2);
+    row.querySelector('[data-field="total"]').value = (typeof Utils!=='undefined' && Utils.formatNumber ? Utils.formatNumber : SafeUtils.formatNumber)(total, 2);
     return total;
   },
 
@@ -155,10 +183,16 @@ const Costing = {
   },
 
   updateSummary() {
+    // ✅ sync ทุกแถวก่อนรวมยอด (กันกรณี event ไม่ยิง)
+    document.querySelectorAll('.ingredient-row').forEach(row => {
+      try { this.calculateRowTotal(row); } catch(e) {}
+    });
+
     const ingredients = this.getIngredientsData();
-    const ingredientsTotal = ingredients.reduce((sum, ing) => sum + ing.total, 0);
-    
-    document.getElementById('ingredients-total').textContent = Utils.formatCurrency(ingredientsTotal);
+    const ingredientsTotal = ingredients.reduce((sum, ing) => sum + (Number(ing.total) || 0), 0);
+
+    const el = document.getElementById('ingredients-total');
+    if (el) el.textContent = (typeof Utils!=='undefined' && Utils.formatCurrency ? Utils.formatCurrency(ingredientsTotal) : SafeUtils.formatCurrency(ingredientsTotal));
   },
 
   calculate() {
@@ -169,12 +203,12 @@ const Costing = {
     
     // Validation
     if (!productName) {
-      (typeof Utils !== 'undefined' && Utils.showAlert ? Utils.showAlert : (msg,type)=>alert(msg))('กรุณากรอกชื่อสินค้า', 'warning');
+      (typeof Utils!=='undefined' && Utils.showAlert ? Utils.showAlert : SafeUtils.showAlert)('กรุณากรอกชื่อสินค้า', 'warning');
       return;
     }
     
     if (ingredients.length === 0) {
-      (typeof Utils !== 'undefined' && Utils.showAlert ? Utils.showAlert : (msg,type)=>alert(msg))('กรุณาเพิ่มวัตถุดิบอย่างน้อย 1 รายการ', 'warning');
+      (typeof Utils!=='undefined' && Utils.showAlert ? Utils.showAlert : SafeUtils.showAlert)('กรุณาเพิ่มวัตถุดิบอย่างน้อย 1 รายการ', 'warning');
       return;
     }
 
@@ -196,11 +230,11 @@ const Costing = {
 
     // Display results
     document.getElementById('results').classList.remove('hidden');
-    document.getElementById('result-cost-per-unit').textContent = Utils.formatCurrency(costPerUnit);
-    document.getElementById('result-total-cost').textContent = Utils.formatCurrency(totalCostPerUnit);
-    document.getElementById('result-marketing-cost').textContent = Utils.formatCurrency(marketingCost);
-    document.getElementById('result-profit-margin').textContent = Utils.formatCurrency(profitMargin);
-    document.getElementById('result-recommended-price').textContent = Utils.formatCurrency(recommendedPrice);
+    document.getElementById('result-cost-per-unit').textContent = (typeof Utils!=='undefined' && Utils.formatCurrency ? Utils.formatCurrency : SafeUtils.formatCurrency)(costPerUnit);
+    document.getElementById('result-total-cost').textContent = (typeof Utils!=='undefined' && Utils.formatCurrency ? Utils.formatCurrency : SafeUtils.formatCurrency)(totalCostPerUnit);
+    document.getElementById('result-marketing-cost').textContent = (typeof Utils!=='undefined' && Utils.formatCurrency ? Utils.formatCurrency : SafeUtils.formatCurrency)(marketingCost);
+    document.getElementById('result-profit-margin').textContent = (typeof Utils!=='undefined' && Utils.formatCurrency ? Utils.formatCurrency : SafeUtils.formatCurrency)(profitMargin);
+    document.getElementById('result-recommended-price').textContent = (typeof Utils!=='undefined' && Utils.formatCurrency ? Utils.formatCurrency : SafeUtils.formatCurrency)(recommendedPrice);
 
     // Store current calculation
     this.currentProduct = {
@@ -222,18 +256,18 @@ const Costing = {
       }
     };
 
-    (typeof Utils !== 'undefined' && Utils.showAlert ? Utils.showAlert : (msg,type)=>alert(msg))('คำนวณเรียบร้อยแล้ว!', 'success');
+    (typeof Utils!=='undefined' && Utils.showAlert ? Utils.showAlert : SafeUtils.showAlert)('คำนวณเรียบร้อยแล้ว!', 'success');
   },
 
   async save() {
     if (!this.currentProduct) {
-      (typeof Utils !== 'undefined' && Utils.showAlert ? Utils.showAlert : (msg,type)=>alert(msg))('กรุณาคำนวณก่อนบันทึก', 'warning');
+      (typeof Utils!=='undefined' && Utils.showAlert ? Utils.showAlert : SafeUtils.showAlert)('กรุณาคำนวณก่อนบันทึก', 'warning');
       return;
     }
 
     const user = Auth.getCurrentUser();
     if (!user) {
-      (typeof Utils !== 'undefined' && Utils.showAlert ? Utils.showAlert : (msg,type)=>alert(msg))('กรุณาเข้าสู่ระบบ', 'error');
+      (typeof Utils!=='undefined' && Utils.showAlert ? Utils.showAlert : SafeUtils.showAlert)('กรุณาเข้าสู่ระบบ', 'error');
       return;
     }
 
@@ -249,7 +283,7 @@ const Costing = {
       const result = await API.saveCosting(data);
 
       if (result.success) {
-        (typeof Utils !== 'undefined' && Utils.showAlert ? Utils.showAlert : (msg,type)=>alert(msg))('บันทึกสำเร็จ!', 'success');
+        (typeof Utils!=='undefined' && Utils.showAlert ? Utils.showAlert : SafeUtils.showAlert)('บันทึกสำเร็จ!', 'success');
         this.clearDraft();
         
         setTimeout(() => {
@@ -258,12 +292,12 @@ const Costing = {
           }
         }, 1000);
       } else {
-        (typeof Utils !== 'undefined' && Utils.showAlert ? Utils.showAlert : (msg,type)=>alert(msg))(result.error || 'บันทึกไม่สำเร็จ', 'error');
+        (typeof Utils!=='undefined' && Utils.showAlert ? Utils.showAlert : SafeUtils.showAlert)(result.error || 'บันทึกไม่สำเร็จ', 'error');
       }
 
     } catch (error) {
       console.error('Save error:', error);
-      (typeof Utils !== 'undefined' && Utils.showAlert ? Utils.showAlert : (msg,type)=>alert(msg))('เกิดข้อผิดพลาด', 'error');
+      (typeof Utils!=='undefined' && Utils.showAlert ? Utils.showAlert : SafeUtils.showAlert)('เกิดข้อผิดพลาด', 'error');
     } finally {
       Utils.showLoading(false);
     }
@@ -277,7 +311,7 @@ const Costing = {
       this.currentProduct = null;
       this.clearDraft();
       this.addIngredientRow();
-      (typeof Utils !== 'undefined' && Utils.showAlert ? Utils.showAlert : (msg,type)=>alert(msg))('ล้างข้อมูลแล้ว', 'info');
+      (typeof Utils!=='undefined' && Utils.showAlert ? Utils.showAlert : SafeUtils.showAlert)('ล้างข้อมูลแล้ว', 'info');
     }
   },
 
