@@ -5,7 +5,7 @@
 
 const Auth = {
   /**
-   * เช็คว่า Login แล้วหรือยั
+   * เช็คว่า Login แล้วหรือยัง
    */
   isLoggedIn() {
     const user = this.getUser();
