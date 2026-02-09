@@ -17,25 +17,25 @@ const Costing = {
 
     // Add ingredient button
     document.getElementById('add-ingredient-btn').addEventListener('click', (e) => {
-            e.preventDefault();
+      e.preventDefault();
       this.addIngredientRow();
     });
 
     // Calculate button
     document.getElementById('calculate-btn').addEventListener('click', (e) => {
-            e.preventDefault();
+      e.preventDefault();
       this.calculate();
     });
 
     // Save button
     document.getElementById('save-btn').addEventListener('click', (e) => {
-            e.preventDefault();
+      e.preventDefault();
       this.save();
     });
 
     // Reset button
     document.getElementById('reset-btn').addEventListener('click', (e) => {
-            e.preventDefault();
+      e.preventDefault();
       this.reset();
     });
   },
@@ -49,7 +49,7 @@ const Costing = {
   },
 
   addIngredientRow(data = null) {
-    const id = data?.id || Utils.generateId('ing');
+    const id = (data && data.id) ? data.id : ((typeof Utils !== 'undefined' && Utils.generateId) ? ((typeof Utils !== 'undefined' && Utils.generateId) ? Utils.generateId('ing') : `ing_${Date.now()}_${Math.random().toString(36).slice(2,7)}`) : `ing_${Date.now()}_${Math.random().toString(36).slice(2,7)}`);
     const row = document.createElement('div');
     row.className = 'ingredient-row grid grid-cols-12 gap-2 items-end mb-3';
     row.dataset.id = id;
@@ -169,12 +169,12 @@ const Costing = {
     
     // Validation
     if (!productName) {
-      Utils.showAlert('กรุณากรอกชื่อสินค้า', 'warning');
+      (typeof Utils !== 'undefined' && Utils.showAlert ? Utils.showAlert : (msg,type)=>alert(msg))('กรุณากรอกชื่อสินค้า', 'warning');
       return;
     }
     
     if (ingredients.length === 0) {
-      Utils.showAlert('กรุณาเพิ่มวัตถุดิบอย่างน้อย 1 รายการ', 'warning');
+      (typeof Utils !== 'undefined' && Utils.showAlert ? Utils.showAlert : (msg,type)=>alert(msg))('กรุณาเพิ่มวัตถุดิบอย่างน้อย 1 รายการ', 'warning');
       return;
     }
 
@@ -222,18 +222,18 @@ const Costing = {
       }
     };
 
-    Utils.showAlert('คำนวณเรียบร้อยแล้ว!', 'success');
+    (typeof Utils !== 'undefined' && Utils.showAlert ? Utils.showAlert : (msg,type)=>alert(msg))('คำนวณเรียบร้อยแล้ว!', 'success');
   },
 
   async save() {
     if (!this.currentProduct) {
-      Utils.showAlert('กรุณาคำนวณก่อนบันทึก', 'warning');
+      (typeof Utils !== 'undefined' && Utils.showAlert ? Utils.showAlert : (msg,type)=>alert(msg))('กรุณาคำนวณก่อนบันทึก', 'warning');
       return;
     }
 
     const user = Auth.getCurrentUser();
     if (!user) {
-      Utils.showAlert('กรุณาเข้าสู่ระบบ', 'error');
+      (typeof Utils !== 'undefined' && Utils.showAlert ? Utils.showAlert : (msg,type)=>alert(msg))('กรุณาเข้าสู่ระบบ', 'error');
       return;
     }
 
@@ -249,7 +249,7 @@ const Costing = {
       const result = await API.saveCosting(data);
 
       if (result.success) {
-        Utils.showAlert('บันทึกสำเร็จ!', 'success');
+        (typeof Utils !== 'undefined' && Utils.showAlert ? Utils.showAlert : (msg,type)=>alert(msg))('บันทึกสำเร็จ!', 'success');
         this.clearDraft();
         
         setTimeout(() => {
@@ -258,12 +258,12 @@ const Costing = {
           }
         }, 1000);
       } else {
-        Utils.showAlert(result.error || 'บันทึกไม่สำเร็จ', 'error');
+        (typeof Utils !== 'undefined' && Utils.showAlert ? Utils.showAlert : (msg,type)=>alert(msg))(result.error || 'บันทึกไม่สำเร็จ', 'error');
       }
 
     } catch (error) {
       console.error('Save error:', error);
-      Utils.showAlert('เกิดข้อผิดพลาด', 'error');
+      (typeof Utils !== 'undefined' && Utils.showAlert ? Utils.showAlert : (msg,type)=>alert(msg))('เกิดข้อผิดพลาด', 'error');
     } finally {
       Utils.showLoading(false);
     }
@@ -277,7 +277,7 @@ const Costing = {
       this.currentProduct = null;
       this.clearDraft();
       this.addIngredientRow();
-      Utils.showAlert('ล้างข้อมูลแล้ว', 'info');
+      (typeof Utils !== 'undefined' && Utils.showAlert ? Utils.showAlert : (msg,type)=>alert(msg))('ล้างข้อมูลแล้ว', 'info');
     }
   },
 
