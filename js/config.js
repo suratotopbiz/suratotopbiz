@@ -1,437 +1,177 @@
-// costing.js - Smart Costing Module
+// config.js - Configuration สำหรับ Surat OTOP Biz
+// ระบบจัดการธุรกิจสำหรับผู้ประกอบการ OTOP จังหวัดสุราษฎร์ธานี
 
-// Safety helpers (fallback เมื่อ Utils ไม่ถูกโหลด/ไม่มีฟังก์ชัน)
-const SafeUtils = {
-  generateId(prefix='id') {
-    return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
+const CONFIG = {
+  // ✅ แก้ไขชื่อตัวแปรให้ตรงกับ api.js
+  API_URL: 'https://script.google.com/macros/s/AKfycbyyUrJSL0lsAeHMBK8z998cW0Z3G2pfjSrV2BsyiKvfHHFXCeK_35Jk6uuU3liYUnrn/exec',
+  SHEET_ID: '1poLCq2Qk_gWm38dFpPPjomAI4LBK5ZPJdqaPUrvdISY',
+  
+  // โครงสร้างฟิลด์ Users
+  USER_FIELDS: {
+    USER_ID: 'user_id',
+    ENTREPRENEURS_NAME: 'entrepreneurs_name',
+    OPERATING_MODEL: 'operating_model',
+    CHAIRMAN_OWNER_NAME: 'chairman_owner_name',
+    ADDRESS_INFO: 'address_info',
+    PHONE: 'phone',
+    EMAIL: 'email',
+    PASSWORD: 'password',
+    STATUS: 'status',
+    REGISTRATION_DATE: 'registration_date',
+    DISTRICT: 'district',
+    LAST_LOGIN: 'last_login'
   },
-  formatNumber(n, d=2) {
-    const x = Number(n || 0);
-    return Number.isFinite(x) ? x.toFixed(d) : (0).toFixed(d);
+  
+  // ค่าเริ่มต้นสำหรับ Smart Costing
+  DEFAULTS: {
+    MARKETING_PERCENT: {
+      food: 12,
+      goods: 10,
+      handicraft: 15,
+      herb: 12,
+      other: 10
+    },
+    PROFIT_PERCENT: {
+      food: 25,
+      goods: 30,
+      handicraft: 35,
+      herb: 30,
+      other: 25
+    }
   },
-  formatCurrency(n) {
-    const x = Number(n || 0);
-    try { return x.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-    catch { return (Number.isFinite(x) ? x : 0).toFixed(2); }
+  
+  // ธีมสีของระบบ
+  COLORS: {
+    primary: '#10b981',
+    secondary: '#14b8a6',
+    dark: '#047857',
+    bg: '#f0fdf4',
+    header: '#2c4c3b'
   },
-  showAlert(msg, type='info') {
-    alert(msg);
+  
+  // LocalStorage Keys
+  STORAGE_KEYS: {
+    USER: 'surat_otop_user',
+    TOKEN: 'surat_otop_token',
+    COSTING_DRAFT: 'surat_otop_costing_draft',
+    SETTINGS: 'surat_otop_settings'
   },
-  showLoading(show, msg='') {
-    // no-op fallback
+  
+  // อำเภอในจังหวัดสุราษฎร์ธานี
+  DISTRICTS: [
+    'เมืองสุราษฎร์ธานี',
+    'กาญจนดิษฐ์',
+    'ดอนสัก',
+    'เกาะสมุย',
+    'เกาะพะงัน',
+    'ไชยา',
+    'ท่าชนะ',
+    'คีรีรัฐนิคม',
+    'บ้านตาขุน',
+    'พนม',
+    'ท่าฉาง',
+    'บ้านนาสาร',
+    'บ้านนาเดิม',
+    'เคียนซา',
+    'เวียงสระ',
+    'พระแสง',
+    'พุนพิน',
+    'ชัยบุรี',
+    'วิภาวดี'
+  ],
+  
+  // ลักษณะผู้ประกอบการ
+  OPERATING_MODELS: [
+    'รายบุคคล',
+    'กลุ่มอาชีพ',
+    'วิสาหกิจชุมชน',
+    'สหกรณ์',
+    'บริษัท/ห้างหุ้นส่วน',
+    'อื่นๆ'
+  ],
+  
+  // ประเภทสินค้า OTOP
+  PRODUCT_CATEGORIES: [
+    { value: 'food', label: 'อาหารและเครื่องดื่ม' },
+    { value: 'goods', label: 'ของใช้และของตกแต่ง' },
+    { value: 'handicraft', label: 'ผ้าและเครื่องแต่งกาย' },
+    { value: 'herb', label: 'สมุนไพรเพื่อสุขภาพ' },
+    { value: 'other', label: 'อื่นๆ' }
+  ],
+  
+  // หน่วยวัดวัตถุดิบ
+  UNITS: [
+    'กก.',
+    'กรัม',
+    'ลิตร',
+    'มล.',
+    'ชิ้น',
+    'ห่อ',
+    'กล่อง',
+    'ถุง',
+    'ขวด',
+    'แพ็ค',
+    'เม็ด',
+    'ช้อนโต๊ะ',
+    'ถ้วย'
+  ],
+  
+  // ประเภทรายรับรายจ่าย
+  TRANSACTION_TYPES: {
+    income: {
+      label: 'รายรับ',
+      color: 'emerald',
+      categories: [
+        'ขายสินค้า',
+        'ขายบริการ',
+        'รายได้อื่นๆ'
+      ]
+    },
+    expense: {
+      label: 'รายจ่าย',
+      color: 'red',
+      categories: [
+        'ค่าวัตถุดิบ',
+        'ค่าแรงงาน',
+        'ค่าขนส่ง',
+        'ค่าบรรจุภัณฑ์',
+        'ค่าการตลาด',
+        'ค่าสาธารณูปโภค',
+        'ค่าอุปกรณ์',
+        'รายจ่ายอื่นๆ'
+      ]
+    }
+  },
+  
+  // ชื่อชีทใน Google Sheets
+  SHEET_NAMES: {
+    USERS: 'Users',
+    TRANSACTIONS: 'Transactions',
+    COSTING: 'Smart_Costing',
+    ADMINS: 'Admins',
+    NEWS: 'News_Feed',
+    FORMULAS: 'Formulas',
+    NOTES: 'Notes'
+  },
+  
+  // การตั้งค่าอื่นๆ
+  SETTINGS: {
+    APP_NAME: 'Surat OTOP Biz',
+    VERSION: '2.2',
+    DEFAULT_LANGUAGE: 'th',
+    ITEMS_PER_PAGE: 10,
+    MAX_INGREDIENTS: 20,
+    MAX_FILE_SIZE: 5 * 1024 * 1024,
+    SUPPORTED_IMAGE_TYPES: ['image/jpeg', 'image/png', 'image/webp']
   }
 };
 
-
-// ===== Loading Overlay (ไม่พึ่ง Utils.showLoading) =====
-function ensureLoadingOverlay_() {
-  let el = document.getElementById('loading-overlay');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = 'loading-overlay';
-    el.style.position = 'fixed';
-    el.style.top = '0';
-    el.style.left = '0';
-    el.style.right = '0';
-    el.style.bottom = '0';
-    el.style.display = 'none';
-    el.style.alignItems = 'center';
-    el.style.justifyContent = 'center';
-    el.style.background = 'rgba(0,0,0,0.25)';
-    el.style.zIndex = '9999';
-
-    const box = document.createElement('div');
-    box.style.background = '#fff';
-    box.style.borderRadius = '16px';
-    box.style.padding = '20px 24px';
-    box.style.minWidth = '140px';
-    box.style.textAlign = 'center';
-    box.style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)';
-
-    const spinner = document.createElement('div');
-    spinner.style.width = '32px';
-    spinner.style.height = '32px';
-    spinner.style.margin = '0 auto 10px auto';
-    spinner.style.border = '3px solid #ddd';
-    spinner.style.borderTopColor = '#2d6a4f';
-    spinner.style.borderRadius = '50%';
-    spinner.style.animation = 'spin 0.9s linear infinite';
-
-    const text = document.createElement('div');
-    text.id = 'loading-text';
-    text.style.fontSize = '14px';
-    text.style.color = '#333';
-
-    const style = document.createElement('style');
-    style.textContent = '@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}';
-
-    box.appendChild(spinner);
-    box.appendChild(text);
-    el.appendChild(box);
-    document.body.appendChild(el);
-    document.head.appendChild(style);
-  }
-  return el;
+// Export
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = CONFIG;
 }
 
-function showLoadingUI_(message) {
-  const el = ensureLoadingOverlay_();
-  const text = document.getElementById('loading-text');
-  if (text) text.textContent = (typeof message === 'string' && message.trim()) ? message : 'กำลังทำงาน...';
-  el.style.display = 'flex';
+// ✅ ให้ใช้งานได้ใน Browser
+if (typeof window !== 'undefined') {
+  window.CONFIG = CONFIG;
 }
-
-function hideLoadingUI_() {
-  const el = document.getElementById('loading-overlay');
-  if (el) el.style.display = 'none';
-}
-// ===== End Loading Overlay =====
-
-function U_(key) {
-  try {
-    if (typeof Utils !== 'undefined' && Utils && typeof Utils[key] === 'function') return Utils[key].bind(Utils);
-  } catch (e) {}
-  return SafeUtils[key].bind(SafeUtils);
-}
-
-const Costing = {
-  ingredients: [],
-  currentProduct: null,
-
-  init() {
-    this.loadDraft();
-    this.setupEventListeners();
-    this.bindRecentCostingUI_();
-    this.updateSummary();
-  },
-
-  setupEventListeners() {
-    // Category change
-    document.getElementById('category').addEventListener('change', (e) => {
-      this.updateDefaultPercents(e.target.value);
-    });
-
-    // Add ingredient button
-    document.getElementById('add-ingredient-btn').addEventListener('click', (e) => {
-      e.preventDefault();
-      this.addIngredientRow();
-    });
-
-    // Calculate button
-    document.getElementById('calculate-btn').addEventListener('click', (e) => {
-      e.preventDefault();
-      this.calculate();
-    });
-
-    // Save button
-    document.getElementById('save-btn').addEventListener('click', (e) => {
-      e.preventDefault();
-      this.save();
-    });
-
-    // Reset button
-    document.getElementById('reset-btn').addEventListener('click', (e) => {
-      e.preventDefault();
-      this.reset();
-    });
-  },
-
-  updateDefaultPercents(category) {
-    const marketing = CONFIG.DEFAULTS.MARKETING_PERCENT[category] || 10;
-    const profit = CONFIG.DEFAULTS.PROFIT_PERCENT[category] || 25;
-    
-    document.getElementById('marketing-percent').value = marketing;
-    document.getElementById('profit-percent').value = profit;
-  },
-
-  addIngredientRow(data = null) {
-    const id = data?.id || U_('generateId')('ing');
-    const row = document.createElement('div');
-    row.className = 'ingredient-row grid grid-cols-12 gap-2 items-end mb-3';
-    row.dataset.id = id;
-    
-    row.innerHTML = `
-      <div class="col-span-4">
-        <input type="text" 
-               class="w-full p-2 border rounded-lg text-sm" 
-               placeholder="วัตถุดิบ" 
-               value="${data?.name || ''}"
-               data-field="name">
-      </div>
-      <div class="col-span-2">
-        <input type="number" 
-               class="w-full p-2 border rounded-lg text-sm" 
-               placeholder="จำนวน" 
-               value="${data?.quantity || ''}"
-               data-field="quantity"
-               step="0.01">
-      </div>
-      <div class="col-span-2">
-        <select class="w-full p-2 border rounded-lg text-sm" data-field="unit">
-          ${CONFIG.UNITS.map(u => `<option ${data?.unit === u ? 'selected' : ''}>${u}</option>`).join('')}
-        </select>
-      </div>
-      <div class="col-span-2">
-        <input type="number" 
-               class="w-full p-2 border rounded-lg text-sm" 
-               placeholder="ราคา/หน่วย" 
-               value="${data?.pricePerUnit || ''}"
-               data-field="pricePerUnit"
-               step="0.01">
-      </div>
-      <div class="col-span-1">
-        <input type="text" 
-               class="w-full p-2 border rounded-lg text-sm bg-gray-50 font-medium" 
-               readonly 
-               value="0"
-               data-field="total">
-      </div>
-      <div class="col-span-1 text-center">
-        <button onclick="Costing.removeIngredient('${id}')" 
-                class="text-red-500 hover:text-red-700 p-2">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-          </svg>
-        </button>
-      </div>
-    `;
-
-    // Add event listeners for auto-calculation
-    row.querySelectorAll('input[data-field], select[data-field]').forEach(input => {
-      input.addEventListener('input', () => {
-        this.calculateRowTotal(row);
-        this.updateSummary();
-        this.saveDraft();
-      });
-    });
-
-    document.getElementById('ingredients-container').appendChild(row);
-    
-    if (data) {
-      this.calculateRowTotal(row);
-    }
-  },
-
-  calculateRowTotal(row) {
-    const quantity = parseFloat(row.querySelector('[data-field="quantity"]').value) || 0;
-    const pricePerUnit = parseFloat(row.querySelector('[data-field="pricePerUnit"]').value) || 0;
-    const total = quantity * pricePerUnit;
-    
-    row.querySelector('[data-field="total"]').value = U_('formatNumber')(total, 2);
-    return total;
-  },
-
-  removeIngredient(id) {
-    const row = document.querySelector(`[data-id="${id}"]`);
-    if (row) {
-      row.remove();
-      this.updateSummary();
-      this.saveDraft();
-    }
-  },
-
-  getIngredientsData() {
-    const rows = document.querySelectorAll('.ingredient-row');
-    const ingredients = [];
-    
-    rows.forEach(row => {
-      const name = row.querySelector('[data-field="name"]').value;
-      if (name.trim()) {
-        ingredients.push({
-          name: name,
-          quantity: parseFloat(row.querySelector('[data-field="quantity"]').value) || 0,
-          unit: row.querySelector('[data-field="unit"]').value,
-          pricePerUnit: parseFloat(row.querySelector('[data-field="pricePerUnit"]').value) || 0,
-          total: parseFloat(row.querySelector('[data-field="total"]').value) || 0
-        });
-      }
-    });
-    
-    return ingredients;
-  },
-
-  updateSummary() {
-    const ingredients = this.getIngredientsData();
-    const ingredientsTotal = ingredients.reduce((sum, ing) => sum + ing.total, 0);
-    
-    document.getElementById('ingredients-total').textContent = U_('formatCurrency')(ingredientsTotal);
-  },
-
-  calculate() {
-    // Get form data
-    const productName = document.getElementById('product-name').value.trim();
-    const category = document.getElementById('category').value;
-    const ingredients = this.getIngredientsData();
-    
-    // Validation
-    if (!productName) {
-      U_('showAlert')('กรุณากรอกชื่อสินค้า', 'warning');
-      return;
-    }
-    
-    if (ingredients.length === 0) {
-      U_('showAlert')('กรุณาเพิ่มวัตถุดิบอย่างน้อย 1 รายการ', 'warning');
-      return;
-    }
-
-    // Get all costs
-    const ingredientsTotal = ingredients.reduce((sum, ing) => sum + ing.total, 0);
-    const yieldQuantity = parseFloat(document.getElementById('yield-quantity').value) || 1;
-    const packagingCost = parseFloat(document.getElementById('packaging-cost').value) || 0;
-    const labelCost = parseFloat(document.getElementById('label-cost').value) || 0;
-    const laborCost = parseFloat(document.getElementById('labor-cost').value) || 0;
-    const marketingPercent = parseFloat(document.getElementById('marketing-percent').value) || 0;
-    const profitPercent = parseFloat(document.getElementById('profit-percent').value) || 0;
-
-    // Calculate
-    const costPerUnit = ingredientsTotal / yieldQuantity;
-    const totalCostPerUnit = costPerUnit + packagingCost + labelCost + (laborCost / yieldQuantity);
-    const marketingCost = totalCostPerUnit * (marketingPercent / 100);
-    const profitMargin = (totalCostPerUnit + marketingCost) * (profitPercent / 100);
-    const recommendedPrice = totalCostPerUnit + marketingCost + profitMargin;
-
-    // Display results
-    document.getElementById('results').classList.remove('hidden');
-    document.getElementById('result-cost-per-unit').textContent = U_('formatCurrency')(costPerUnit);
-    document.getElementById('result-total-cost').textContent = U_('formatCurrency')(totalCostPerUnit);
-    document.getElementById('result-marketing-cost').textContent = U_('formatCurrency')(marketingCost);
-    document.getElementById('result-profit-margin').textContent = U_('formatCurrency')(profitMargin);
-    document.getElementById('result-recommended-price').textContent = U_('formatCurrency')(recommendedPrice);
-
-    // Store current calculation
-    this.currentProduct = {
-      productName,
-      category,
-      ingredients,
-      yieldQuantity,
-      packagingCost,
-      labelCost,
-      laborCost,
-      marketingPercent,
-      profitPercent,
-      results: {
-        costPerUnit,
-        totalCostPerUnit,
-        marketingCost,
-        profitMargin,
-        recommendedPrice
-      }
-    };
-
-    U_('showAlert')('คำนวณเรียบร้อยแล้ว!', 'success');
-  },
-
-  async save() {
-    if (!this.currentProduct) {
-      U_('showAlert')('กรุณาคำนวณก่อนบันทึก', 'warning');
-      return;
-    }
-
-    const user = Auth.getCurrentUser();
-    if (!user) {
-      U_('showAlert')('กรุณาเข้าสู่ระบบ', 'error');
-      return;
-    }
-
-    try {
-      showLoadingUI_('กำลังบันทึก...');
-
-      const phone = String(user.phone || user.userPhone || '').trim();
-      const data = {
-        userId: user.userId,
-        phone,
-        user_phone: phone,
-        ...this.currentProduct,
-        createdAt: new Date().toISOString()
-      };
-
-      const result = await API.saveCosting(data);
-
-      if (result.success) {
-        U_('showAlert')('บันทึกสำเร็จ!', 'success');
-        this.clearDraft();
-        
-        setTimeout(() => {
-          if (confirm('ต้องการสร้างใบเสนอราคาหรือไม่?')) {
-            window.location.href = 'sales-tools.html';
-          }
-        }, 1000);
-      } else {
-        U_('showAlert')(result.error || 'บันทึกไม่สำเร็จ', 'error');
-      }
-
-    } catch (error) {
-      console.error('Save error:', error);
-      U_('showAlert')('เกิดข้อผิดพลาด', 'error');
-    } finally {
-      hideLoadingUI_();
-    }
-  },
-
-  reset() {
-    if (confirm('ต้องการล้างข้อมูลทั้งหมดหรือไม่?')) {
-      document.getElementById('costing-form').reset();
-      document.getElementById('ingredients-container').innerHTML = '';
-      document.getElementById('results').classList.add('hidden');
-      this.currentProduct = null;
-      this.clearDraft();
-      this.addIngredientRow();
-      U_('showAlert')('ล้างข้อมูลแล้ว', 'info');
-    }
-  },
-
-  saveDraft() {
-    const draft = {
-      productName: document.getElementById('product-name').value,
-      category: document.getElementById('category').value,
-      ingredients: this.getIngredientsData(),
-      yieldQuantity: document.getElementById('yield-quantity').value,
-      packagingCost: document.getElementById('packaging-cost').value,
-      labelCost: document.getElementById('label-cost').value,
-      laborCost: document.getElementById('labor-cost').value,
-      marketingPercent: document.getElementById('marketing-percent').value,
-      profitPercent: document.getElementById('profit-percent').value
-    };
-    
-    localStorage.setItem(CONFIG.STORAGE_KEYS.COSTING_DRAFT, JSON.stringify(draft));
-  },
-
-  loadDraft() {
-    const draft = localStorage.getItem(CONFIG.STORAGE_KEYS.COSTING_DRAFT);
-    if (draft) {
-      try {
-        const data = JSON.parse(draft);
-        
-        document.getElementById('product-name').value = data.productName || '';
-        document.getElementById('category').value = data.category || 'food';
-        document.getElementById('yield-quantity').value = data.yieldQuantity || '';
-        document.getElementById('packaging-cost').value = data.packagingCost || '';
-        document.getElementById('label-cost').value = data.labelCost || '';
-        document.getElementById('labor-cost').value = data.laborCost || '';
-        document.getElementById('marketing-percent').value = data.marketingPercent || 12;
-        document.getElementById('profit-percent').value = data.profitPercent || 25;
-        
-        if (data.ingredients && data.ingredients.length > 0) {
-          data.ingredients.forEach(ing => this.addIngredientRow(ing));
-        } else {
-          this.addIngredientRow();
-        }
-        
-        this.updateSummary();
-      } catch (error) {
-        console.error('Error loading draft:', error);
-        this.addIngredientRow();
-      }
-    } else {
-      this.addIngredientRow();
-    }
-  },
-
-  clearDraft() {
-    localStorage.removeItem(CONFIG.STORAGE_KEYS.COSTING_DRAFT);
-  }
-};
-
-document.addEventListener('DOMContentLoaded', () => {
-  Costing.init();
-});

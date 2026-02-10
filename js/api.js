@@ -1,47 +1,408 @@
 /**
- * API Module (Frontend) - Compatible Mode
- * ✅ ส่งทั้ง route และ action เพื่อรองรับ Backend ได้ทั้ง 2 แบบ
+ * API Module for Surat OTOP Biz v2.2
+ * ระบบจัดการการเชื่อมต่อกับ Google Apps Script Backend
  */
+
 const API = {
-  baseURL: (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : '',
 
-  async request(routeOrAction, data = {}) {
-    const route = routeOrAction;
-    const payload = { route, action: route, ...data };
+  ensureConfig_() {
+    // ตรวจสอบว่า CONFIG.API_URL ถูกตั้งค่าแล้ว
+    const url = this.baseURL;
+    if (!url || typeof url !== 'string' || !url.startsWith('http')) {
+      throw new Error('CONFIG.API_URL ไม่ถูกตั้งค่า (กรุณาแก้ไขไฟล์ js/config.js ให้เป็นลิงก์ Web App ของ Apps Script)');
+    }
+    return url;
+  },
+  // ✅ แก้ไข: ใช้ชื่อตัวแปรที่ตรงกับ config.js
+  baseURL: CONFIG.API_URL,
 
+  /**
+   * ฟังก์ชันหลักสำหรับส่ง request ไป Backend
+   */
+  async request(route, data = {}) {
     try {
-      if (!this.baseURL) throw new Error('CONFIG.API_URL ไม่ถูกตั้งค่า');
-      const res = await fetch(this.baseURL, {
+      console.log(`📤 API Request: ${route}`, data);
+      
+      const response = await fetch(this.baseURL, {
         method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify(payload),
+        headers: {
+          'Content-Type': 'text/plain', // ✅ แก้ไข CORS
+        },
+        body: JSON.stringify({
+          route: route,
+          ...data
+        })
       });
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      return await res.json();
-    } catch (e) {
-      console.error('API.request error:', e);
-      return { success: false, error: e.message || 'เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ' };
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log(`📥 API Response: ${route}`, result);
+      
+      return result;
+    } catch (error) {
+      console.error('❌ API Request Error:', error);
+      return {
+        success: false,
+        error: error.message || 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้'
+      };
     }
   },
 
-  // Auth
-  login(phone, password) { return this.request('login', { phone, password }); },
-  register(phone, newPassword) { return this.request('register', { phone, newPassword }); },
+  // ========================
+  // Authentication APIs
+  // ========================
 
-  // Dashboard
-  getDashboardData(userId, phone='') { return this.request('get-dashboard', { userId, phone }); },
+  /**
+   * ทดสอบการเชื่อมต่อ
+   */
+  async testConnection() {
+    try {
+      const result = await this.request('status');
+      return result;
+    } catch (error) {
+      console.error('Connection test failed:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
 
-  // Costing
-  saveCosting(data) { return this.request('save-costing', data); },
+  /**
+   * เข้าสู่ระบบ
+   */
+  async login(phone, password) {
+    try {
+      const result = await this.request('login', {
+        phone: phone,
+        password: password
+      });
+      return result;
+    } catch (error) {
+      console.error('Login error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
 
-  // Transactions
-  addTransaction(data) { return this.request('add-transaction', data); },
-  getTransactions(userId, limit=100) { return this.request('get-transactions', { userId, limit }); },
+  /**
+   * ตั้งรหัสผ่านครั้งแรก
+   */
+  async register(phone, newPassword) {
+    try {
+      const result = await this.request('register', {
+        phone: phone,
+        newPassword: newPassword
+      });
+      return result;
+    } catch (error) {
+      console.error('Register error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
 
-  // Admin
-  adminLogin(username, password) { return this.request('adminLogin', { username, password }); },
-  getAdminStats(adminId) { return this.request('admin-stats', { adminId }); },
-  getAdminUsers(adminId, limit=50) { return this.request('admin-users', { adminId, limit }); },
-  getAdminAllTransactions(adminId, limit=50) { return this.request('admin-all-transactions', { adminId, limit }); },
-  adminUpdateUserStatus(adminId, userId, status) { return this.request('admin-update-user-status', { adminId, userId, status }); },
+  // ========================
+  // Smart Costing APIs
+  // ========================
+
+  /**
+   * บันทึกการคำนวณต้นทุน
+   */
+  async saveCosting(costingData) {
+    try {
+      const result = await this.request('save-costing', costingData);
+      return result;
+    } catch (error) {
+      console.error('Save costing error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  /**
+   * ดึงรายการคำนวณต้นทุนทั้งหมด
+   */
+  async getCostingList(userId) {
+    try {
+      const result = await this.request('costing-list', {
+        userId: userId
+      });
+      return result;
+    } catch (error) {
+      console.error('Get costing list error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  // ========================
+  // Transaction APIs
+  // ========================
+
+  /**
+   * เพิ่มรายการรับ-จ่าย
+   */
+  async addTransaction(transactionData) {
+    try {
+      const result = await this.request('add-transaction', transactionData);
+      return result;
+    } catch (error) {
+      console.error('Add transaction error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  /**
+   * ✅ ดึงรายการ Transactions
+   */
+  async getTransactions(userId, limit = 100) {
+    try {
+      const result = await this.request('get-transactions', {
+        userId: userId,
+        limit: limit
+      });
+      return result;
+    } catch (error) {
+      console.error('Get transactions error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  /**
+   * ลบรายการ Transaction
+   */
+  async deleteTransaction(transactionId) {
+    try {
+      const result = await this.request('delete-transaction', {
+        transactionId: transactionId
+      });
+      return result;
+    } catch (error) {
+      console.error('Delete transaction error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  // ========================
+  // Dashboard APIs
+  // ========================
+
+  /**
+   * ✅ ดึงข้อมูล Dashboard (สรุป)
+   */
+  async getDashboardData(userId) {
+    try {
+      const result = await this.request('get-dashboard', {
+        userId: userId
+      });
+      return result;
+    } catch (error) {
+      console.error('Get dashboard data error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  /**
+   * ดึงสถิติรายเดือน
+   */
+  async getMonthlyStats(userId, year, month) {
+    try {
+      const result = await this.request('monthly-stats', {
+        userId: userId,
+        year: year,
+        month: month
+      });
+      return result;
+    } catch (error) {
+      console.error('Get monthly stats error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  // ========================
+  // News APIs
+  // ========================
+
+  /**
+   * ดึงข่าวสารที่เปิดใช้งาน
+   */
+  async getActiveNews() {
+    try {
+      const result = await this.request('active-news');
+      return result;
+    } catch (error) {
+      console.error('Get active news error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  /**
+   * ดึงข่าวสารทั้งหมด (Admin)
+   */
+  async getAllNews() {
+    try {
+      const result = await this.request('all-news');
+      return result;
+    } catch (error) {
+      console.error('Get all news error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  // ========================
+  // User Profile APIs
+  // ========================
+
+  /**
+   * ดึงข้อมูลโปรไฟล์ผู้ใช้
+   */
+  async getUserProfile(userId) {
+    try {
+      const result = await this.request('get-profile', {
+        userId: userId
+      });
+      return result;
+    } catch (error) {
+      console.error('Get user profile error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  /**
+   * อัปเดตโปรไฟล์ผู้ใช้
+   */
+  async updateProfile(userId, profileData) {
+    try {
+      const result = await this.request('update-profile', {
+        userId: userId,
+        ...profileData
+      });
+      return result;
+    } catch (error) {
+      console.error('Update profile error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  // ========================
+  // Admin APIs
+  // ========================
+
+  /**
+   * Admin เข้าสู่ระบบ
+   */
+  async adminLogin(username, password) {
+      return await this.request('adminLogin', {
+        username: username,
+        password: password
+      }
+    );
+  },
+
+  /**
+   * ดึงรายชื่อผู้ใช้ทั้งหมด
+   */
+  async getAllUsers() {
+    try {
+      const result = await this.request('all-users');
+      return result;
+    } catch (error) {
+      console.error('Get all users error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  /**
+   * เพิ่มผู้ใช้ใหม่
+   */
+  async addUser(userData) {
+    try {
+      const result = await this.request('add-user', userData);
+      return result;
+    } catch (error) {
+      console.error('Add user error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  /**
+   * อัปเดตสถานะผู้ใช้
+   */
+  async updateUserStatus(userId, status) {
+    try {
+      const result = await this.request('update-user-status', {
+        userId: userId,
+        status: status
+      });
+      return result;
+    } catch (error) {
+      console.error('Update user status error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
 };
+
+// ✅ ทดสอบการเชื่อมต่อเมื่อโหลดหน้า
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('🚀 Surat OTOP Biz v2.2 Loaded');
+  console.log('📡 API URL:', API.baseURL);
+  
+  // ทดสอบ API (เฉพาะ development)
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    API.testConnection().then(result => {
+      if (result.success) {
+        console.log('✅ API Connection: OK');
+      } else {
+        console.error('❌ API Connection: Failed', result.error);
+      }
+    });
+  }
+});
