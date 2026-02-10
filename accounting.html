@@ -129,19 +129,19 @@
         <!-- Summary -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <div class="bg-emerald-50 p-4 rounded-xl text-center">
-                <div class="text-sm text-emerald-700">รายรับ</div>
+                <div class="text-sm text-emerald-700">รายรับ (เดือนนี้)</div>
                 <div class="text-2xl font-bold text-emerald-600" id="total-income">฿0</div>
             </div>
             <div class="bg-red-50 p-4 rounded-xl text-center">
-                <div class="text-sm text-red-700">รายจ่าย</div>
+                <div class="text-sm text-red-700">รายจ่าย (เดือนนี้)</div>
                 <div class="text-2xl font-bold text-red-600" id="total-expense">฿0</div>
             </div>
             <div class="bg-blue-50 p-4 rounded-xl text-center">
-                <div class="text-sm text-blue-700">กำไร/ขาดทุน</div>
+                <div class="text-sm text-blue-700">กำไร/ขาดทุนเดือนนี้</div>
                 <div class="text-2xl font-bold text-blue-600" id="total-profit">฿0</div>
             </div>
             <div class="bg-gray-50 p-4 rounded-xl text-center">
-                <div class="text-sm text-gray-700">รายการ</div>
+                <div class="text-sm text-gray-700">กำไร/ขาดทุนสะสมรายปี</div>
                 <div class="text-2xl font-bold text-gray-600" id="total-count">0</div>
             </div>
         </div>
@@ -270,7 +270,7 @@
             if (!user || !user.userId) return;
             
             try {
-                const result = await API.getTransactions(user.userId, 50);
+                const result = await API.getTransactions(user.userId, 1000);
                 
                 if (result.success) {
                     allTransactions = result.data || [];
@@ -326,19 +326,40 @@
 
         // อัปเดตสรุป
         function updateSummary(transactions) {
-            let totalIncome = 0;
-            let totalExpense = 0;
-            
-            transactions.forEach(tx => {
+            const now = new Date();
+            const thisYear = now.getFullYear();
+            const thisMonth = now.getMonth();
+
+            let monthIncome = 0;
+            let monthExpense = 0;
+            let yearIncome = 0;
+            let yearExpense = 0;
+
+            (transactions || []).forEach(tx => {
                 const amount = parseFloat(tx.amount) || 0;
-                if (tx.type === 'income') totalIncome += amount;
-                else totalExpense += amount;
+                const d = new Date(tx.date || tx.timestamp || tx.created_at || tx.createdAt || Date.now());
+                if (d.getFullYear() === thisYear) {
+                    if (tx.type === 'income') yearIncome += amount;
+                    else if (tx.type === 'expense') yearExpense += amount;
+
+                    if (d.getMonth() === thisMonth) {
+                        if (tx.type === 'income') monthIncome += amount;
+                        else if (tx.type === 'expense') monthExpense += amount;
+                    }
+                }
             });
-            
-            document.getElementById('total-income').textContent = '฿' + totalIncome.toLocaleString('th-TH');
-            document.getElementById('total-expense').textContent = '฿' + totalExpense.toLocaleString('th-TH');
-            document.getElementById('total-profit').textContent = '฿' + (totalIncome - totalExpense).toLocaleString('th-TH');
-            document.getElementById('total-count').textContent = transactions.length;
+
+            const monthProfit = monthIncome - monthExpense;
+            const yearlyProfit = yearIncome - yearExpense;
+
+            const fmt = (n) => (typeof Utils !== 'undefined' && Utils.formatCurrency)
+                ? Utils.formatCurrency(n)
+                : Number(n || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            document.getElementById('total-income').textContent = '฿' + fmt(monthIncome);
+            document.getElementById('total-expense').textContent = '฿' + fmt(monthExpense);
+            document.getElementById('total-profit').textContent = '฿' + fmt(monthProfit);
+            document.getElementById('total-count').textContent = '฿' + fmt(yearlyProfit);
         }
 
         // เริ่มต้น

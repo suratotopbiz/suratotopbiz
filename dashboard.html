@@ -165,9 +165,9 @@
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                                 </svg>
-                                <p class="text-xs text-emerald-100">รายการ</p>
+                                <p class="text-xs text-emerald-100">กำไร/ขาดทุนสะสมรายปี</p>
                             </div>
-                            <p class="text-xl font-bold"><span id="transaction-count-value">0</span> รายการ</p>
+                            <p class="text-xl font-bold"><span id="transaction-count-value">฿0</span></p>
                         </div>
                     </div>
                 </div>
@@ -213,14 +213,14 @@
                         <span class="font-medium text-gray-800">เครื่องมือขาย</span>
                     </div>
                 </a>
-                <a href="analytics.html" class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition group">
+                <a href="#" class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition group">
                     <div class="flex flex-col items-center text-center">
                         <div class="w-14 h-14 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition">
                             <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
                             </svg>
                         </div>
-                        <span class="font-medium text-gray-800">รายงานและกราฟ</span>
+                        <span class="font-medium text-gray-800">เครื่องมือ AI</span>
                     </div>
                 </a>
             </div>
@@ -322,7 +322,7 @@
                     </div>
                     <span class="text-xs text-gray-700">ขาย</span>
                 </a>
-                <a href="analytics.html" class="flex flex-col items-center p-3 hover:bg-gray-50 rounded-lg">
+                <a href="#" class="flex flex-col items-center p-3 hover:bg-gray-50 rounded-lg">
                     <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-2">
                         <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
@@ -355,260 +355,8 @@
     <script src="js/utils.js"></script>
     <script src="js/api.js"></script>
     
-    <script>
-        // ✅ Dashboard Script - ใช้ localStorage โดยตรง
-        const Dashboard = {
-            data: {
-                user: null,
-                summary: {
-                    monthlyIncome: 0,
-                    monthlyExpense: 0,
-                    monthlyProfit: 0,
-                    lastMonthProfit: 0,
-                    productCount: 0,
-                    transactionCount: 0
-                },
-                transactions: [],
-                news: []
-            },
+    <script src="js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
 
-            async init() {
-                console.log('🚀 Dashboard initializing...');
-                
-                // ✅ ใช้ localStorage โดยตรง
-                const userStr = localStorage.getItem('surat_otop_user');
-                if (!userStr) {
-                    console.error('❌ No user in localStorage');
-                    window.location.href = 'index.html';
-                    return;
-                }
-
-                try {
-                    this.data.user = JSON.parse(userStr);
-                    console.log('✅ User loaded:', this.data.user.userId);
-                } catch (error) {
-                    console.error('❌ Parse user error:', error);
-                    window.location.href = 'index.html';
-                    return;
-                }
-
-                this.renderUserInfo();
-                await this.loadData();
-            },
-
-            renderUserInfo() {
-                const user = this.data.user;
-                if (user) {
-                    const nameEl = document.getElementById('user-name');
-                    if (nameEl) {
-                        nameEl.textContent = user.chairmanOwnerName || user.entrepreneursName || 'ผู้ใช้';
-                    }
-                }
-            },
-
-            async loadData() {
-                try {
-                    await Promise.all([
-                        this.loadSummary(),
-                        this.loadTransactions(),
-                        this.loadNews()
-                    ]);
-                } catch (error) {
-                    console.error('❌ Load data error:', error);
-                }
-            },
-
-            async loadSummary() {
-                try {
-                    const user = this.data.user;
-                    const result = await API.request('get-dashboard', { userId: user.userId, phone: (user.phone || user.userPhone || '') });
-                    
-                    if (result.success && result.data) {
-                        this.data.summary = {
-                            monthlyIncome: result.data.monthlyIncome || 0,
-                            monthlyExpense: result.data.monthlyExpense || 0,
-                            productCount: result.data.productCount || 0,
-                            transactionCount: result.data.transactionCount || 0,
-                            lastMonthProfit: 0
-                        };
-                    }
-                    
-                    this.renderSummary();
-                } catch (error) {
-                    console.error('❌ Load summary error:', error);
-                    this.renderSummary();
-                }
-            },
-
-            renderSummary() {
-                const summary = this.data.summary;
-                const profit = summary.monthlyIncome - summary.monthlyExpense;
-                
-                document.getElementById('monthly-profit-value').textContent = '฿' + profit.toLocaleString('th-TH');
-                document.getElementById('product-count-value').textContent = summary.productCount.toLocaleString('th-TH');
-                document.getElementById('transaction-count-value').textContent = summary.transactionCount.toLocaleString('th-TH');
-                document.getElementById('monthly-income-value').textContent = '฿' + summary.monthlyIncome.toLocaleString('th-TH');
-                document.getElementById('monthly-expense-value').textContent = '฿' + summary.monthlyExpense.toLocaleString('th-TH');
-            },
-
-            async loadTransactions() {
-                try {
-                    const user = this.data.user;
-                    console.log('📝 Loading transactions for userId:', user.userId);
-                    
-                    const result = await API.getTransactions(user.userId, 5);
-                    console.log('📝 Result:', result);
-                    
-                    if (result.success && result.data) {
-                        this.data.transactions = result.data;
-                        console.log('✅ Loaded', this.data.transactions.length, 'transactions');
-                    } else {
-                        console.error('❌ Load transactions failed:', result.error);
-                        this.data.transactions = [];
-                    }
-                    
-                    this.renderTransactions();
-                } catch (error) {
-                    console.error('❌ Load transactions error:', error);
-                    this.data.transactions = [];
-                    this.renderTransactions();
-                }
-            },
-
-            renderTransactions() {
-                const container = document.getElementById('recent-transactions');
-                if (!container) return;
-                
-                const transactions = this.data.transactions;
-                
-                if (!transactions || transactions.length === 0) {
-                    container.innerHTML = `
-                        <div class="text-center py-8 text-gray-400">
-                            <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                            <p class="mb-2">ยังไม่มีรายการบันทึก</p>
-                            <p class="text-xs">User ID: ${this.data.user?.userId || 'N/A'}</p>
-                            <a href="accounting.html" class="mt-2 inline-block text-emerald-600 hover:text-emerald-700 text-sm">
-                                เริ่มบันทึกรายการ →
-                            </a>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                container.innerHTML = transactions.map(tx => {
-                    const isIncome = tx.type === 'income';
-                    const amount = parseFloat(tx.amount) || 0;
-                    const date = tx.date ? new Date(tx.date) : new Date();
-                    
-                    // ✅ กำหนดข้อความประเภท
-                    const typeLabel = isIncome ? 'รายรับ' : 'รายจ่าย';
-                    
-                    return `
-                        <div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition border-b border-gray-100">
-                            <div class="flex items-center flex-1">
-                                <!-- ไอคอน -->
-                                <div class="w-10 h-10 rounded-lg flex items-center justify-center mr-3 ${
-                                    isIncome ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'
-                                }">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        ${isIncome 
-                                            ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path>'
-                                            : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6"></path>'
-                                        }
-                                    </svg>
-                                </div>
-                                
-                                <!-- ข้อมูลรายการ -->
-                                <div class="flex-1">
-                                    <!-- บรรทัดที่ 1: รายรับ/รายจ่าย • หมวดหมู่ -->
-                                    <div class="font-medium text-gray-800">
-                                        <span class="${isIncome ? 'text-emerald-600' : 'text-red-600'}">${typeLabel}</span>
-                                        ${tx.category ? ` • ${tx.category}` : ''}
-                                    </div>
-                                    
-                                    <!-- บรรทัดที่ 2: รายละเอียด • วันที่ -->
-                                    <div class="text-sm text-gray-500">
-                                        ${tx.description || '-'} • ${date.toLocaleDateString('th-TH', {
-                                            year: 'numeric',
-                                            month: 'short',
-                                            day: 'numeric'
-                                        })}
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- จำนวนเงิน -->
-                            <div class="text-right">
-                                <div class="font-bold ${isIncome ? 'text-emerald-600' : 'text-red-600'}">
-                                    ${isIncome ? '+' : '-'}฿${amount.toLocaleString('th-TH', {
-                                        minimumFractionDigits: 0,
-                                        maximumFractionDigits: 2
-                                    })}
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-                
-                console.log('✅ Rendered', transactions.length, 'transactions');
-            },
-
-            async loadNews() {
-                try {
-                    const result = await API.getActiveNews();
-                    if (result.success && result.data) {
-                        this.data.news = result.data;
-                    }
-                    this.renderNews();
-                } catch (error) {
-                    console.error('❌ Load news error:', error);
-                    this.renderNews();
-                }
-            },
-
-            renderNews() {
-                const container = document.getElementById('news-marquee');
-                if (!container) return;
-                
-                const news = this.data.news;
-                
-                if (!news || news.length === 0) {
-                    container.innerHTML = '📢 ยังไม่มีประกาศ';
-                    container.classList.remove('marquee');
-                    return;
-                }
-                
-                const newsText = news.map(n => `📢 ${n.title}: ${n.content}`).join('  •  ');
-                container.innerHTML = newsText;
-                container.classList.add('marquee');
-            },
-
-            async refresh() {
-                await this.loadData();
-                console.log('✅ Data refreshed');
-            },
-
-            showQuickMenu() {
-                document.getElementById('quick-menu-modal').classList.remove('hidden');
-            },
-
-            closeQuickMenu() {
-                document.getElementById('quick-menu-modal').classList.add('hidden');
-            },
-
-            logout() {
-                localStorage.removeItem('surat_otop_user');
-                localStorage.removeItem('surat_otop_token');
-                window.location.href = 'index.html';
-            }
-        };
-
-        // ✅ เริ่มต้น
-        document.addEventListener('DOMContentLoaded', () => {
-            Dashboard.init();
-        });
-    </script>
 </body>
 </html>

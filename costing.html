@@ -147,6 +147,48 @@
                 </div>
             </div>
 
+        
+            <!-- Recent Calculations -->
+            <div id="recent-costing-section" class="bg-white rounded-2xl shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold text-gray-800">รายการคำนวณล่าสุด</h2>
+                    <div class="flex gap-2">
+                        <button type="button" id="export-costing-excel"
+                            class="px-3 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 text-sm">
+                            ⬇️ Excel (CSV)
+                        </button>
+                        <button type="button" id="export-costing-pdf"
+                            class="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 text-sm">
+                            ⬇️ PDF
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm">
+                        <thead>
+                            <tr class="text-left text-gray-600 border-b">
+                                <th class="py-2 pr-4">วันที่</th>
+                                <th class="py-2 pr-4">สินค้า</th>
+                                <th class="py-2 pr-4">ประเภท</th>
+                                <th class="py-2 pr-4 text-right">ราคาขายแนะนำ</th>
+                                <th class="py-2 pr-4 text-right">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-costing-list">
+                            <tr><td colspan="5" class="py-6 text-center text-gray-400">กำลังโหลด...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-4 flex justify-end">
+                    <button type="button" id="recent-costing-more"
+                        class="text-emerald-600 hover:text-emerald-700 text-sm font-medium hidden">
+                        ดูเพิ่มเติม →
+                    </button>
+                </div>
+            </div>
+
         </form>
     </div>
 
